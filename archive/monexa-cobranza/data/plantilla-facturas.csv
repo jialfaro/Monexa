@@ -1,0 +1,4 @@
+cliente,factura,fecha_emision,fecha_vencimiento,importe,moneda,correo,estado
+Estudio Norte,F-2026-091,2026-07-01,2026-08-01,8400,PEN,pagos@estudionorte.pe,pendiente
+Mercado Lumen,F-2026-099,2026-07-15,2026-08-15,3100,PEN,finanzas@mercadolumen.pe,pendiente
+Círculo Verde,F-2026-110,2026-08-08,2026-09-08,1850,PEN,administracion@circuloverde.pe,pendiente

@@ -1,0 +1,18 @@
+{
+  "name": "monexa",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Enjambre de agentes que buscan, ejecutan y cobran trabajo en cripto, con dashboard de auditoría.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test test/*.test.js",
+    "check": "node --check server.mjs && find src public -name '*.js' -exec node --check {} +"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.100.0"
+  }
+}

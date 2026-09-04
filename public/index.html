@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Monexa · Enjambre</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Monexa</h1>
+      <p class="muted">Agentes que buscan, ejecutan y cobran trabajo en cripto. Todo auditado.</p>
+    </div>
+    <div class="status" id="status"></div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="overview" class="active">Resumen</button>
+    <button data-tab="agents">Agentes</button>
+    <button data-tab="opportunities">Oportunidades</button>
+    <button data-tab="jobs">Trabajos</button>
+    <button data-tab="services">Servicios x402</button>
+    <button data-tab="ledger">Ledger</button>
+    <button data-tab="audit">Bitácora</button>
+  </nav>
+
+  <main>
+    <section id="tab-overview" class="tab active">
+      <div class="tiles" id="tiles"></div>
+      <div class="grid-2">
+        <div class="card"><h2>Alertas de configuración</h2><ul id="alerts" class="list"></ul></div>
+        <div class="card"><h2>Actividad reciente</h2><ul id="activity" class="list mono"></ul></div>
+      </div>
+    </section>
+
+    <section id="tab-agents" class="tab">
+      <div class="card">
+        <h2>Crear agente</h2>
+        <form id="spawn-form" class="row">
+          <select name="template" id="spawn-template"></select>
+          <input name="goal" placeholder="Objetivo (opcional)" />
+          <select name="parentId" id="spawn-parent"><option value="">Sin padre (raíz)</option></select>
+          <button type="submit">Crear</button>
+        </form>
+        <p class="muted" id="spawn-help"></p>
+      </div>
+      <div class="card"><h2>Árbol de agentes</h2><div id="agent-tree"></div></div>
+    </section>
+
+    <section id="tab-opportunities" class="tab">
+      <div class="card">
+        <div class="row between"><h2>Oportunidades</h2><div class="row"><input id="opp-filter" placeholder="Filtrar por texto o estado" /><button class="secondary" data-reevaluate="1" title="Vuelve a evaluar con el modelo los bounties puntuados sólo por heurística">Reevaluar con el modelo</button></div></div>
+        <div class="table-wrap"><table id="opp-table"><thead><tr><th>Score</th><th>Estado</th><th>Fuente</th><th>Título</th><th>Recompensa</th><th>Riesgo</th><th>Agente</th><th></th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </section>
+
+    <section id="tab-jobs" class="tab">
+      <div class="card"><h2>Trabajos realizados</h2><div id="jobs"></div></div>
+    </section>
+
+    <section id="tab-services" class="tab">
+      <div class="card"><h2>Servicios de pago por llamada</h2><p class="muted" id="services-help"></p><div class="table-wrap"><table id="services-table"><thead><tr><th>Servicio</th><th>URL</th><th>Precio USD</th><th>Activo</th></tr></thead><tbody></tbody></table></div></div>
+    </section>
+
+    <section id="tab-ledger" class="tab">
+      <div class="card"><h2>Por activo</h2><div class="table-wrap"><table id="ledger-summary"><thead><tr><th>Activo</th><th>Estimado</th><th>Reclamado</th><th>Verificado en cadena</th><th>Coste</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="card"><h2>Movimientos</h2><div class="table-wrap"><table id="ledger-table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Importe</th><th>Nota</th><th>Evidencia</th></tr></thead><tbody></tbody></table></div></div>
+    </section>
+
+    <section id="tab-audit" class="tab">
+      <div class="card"><div class="row between"><h2>Bitácora encadenada</h2><span id="audit-integrity" class="pill"></span></div><div class="table-wrap"><table id="audit-table"><thead><tr><th>Fecha</th><th>Evento</th><th>Detalle</th><th>Hash</th></tr></thead><tbody></tbody></table></div></div>
+    </section>
+  </main>
+  <script src="/app.js" type="module"></script>
+</body>
+</html>
