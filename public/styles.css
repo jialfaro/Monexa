@@ -1566,4 +1566,103 @@ pre {
   font-size: 11px;
 }
 
+/* Realistic Bounty Table & CI Badges */
+.tag-tech {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(0, 240, 255, 0.08);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+
+.ci-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: rgba(0, 210, 106, 0.1);
+  border: 1px solid rgba(0, 210, 106, 0.3);
+  color: #00D26A;
+  white-space: nowrap;
+}
+
+.ci-dot-green {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00D26A;
+  box-shadow: 0 0 8px #00D26A;
+  display: inline-block;
+}
+
+.reward-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reward-amount {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #00D26A;
+}
+
+.reward-type-escrow {
+  font-size: 10px;
+  color: #38BDF8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.reward-type-pool {
+  font-size: 10px;
+  color: #A78BFA;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pr-link-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 12.5px;
+  color: #00D26A;
+  text-decoration: none;
+  background: rgba(0, 210, 106, 0.08);
+  padding: 3px 8px;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 210, 106, 0.25);
+  transition: all 0.2s ease;
+}
+
+.pr-link-badge:hover {
+  background: rgba(0, 210, 106, 0.18);
+  border-color: #00D26A;
+  box-shadow: 0 0 10px rgba(0, 210, 106, 0.3);
+}
+
+.pr-target-branch {
+  font-size: 10.5px;
+  color: #64748B;
+  font-family: var(--font-mono);
+  display: block;
+  margin-top: 3px;
+}
+
+
 

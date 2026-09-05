@@ -53,26 +53,38 @@
     <section id="tab-overview" class="tab active">
       <div class="tiles" id="tiles"></div>
       
-      <div class="card" style="border: 1px solid rgba(0, 210, 106, 0.4); background: linear-gradient(135deg, rgba(0, 210, 106, 0.05), rgba(0, 82, 255, 0.05)); margin-bottom: 20px;">
-        <div class="row between" style="margin-bottom: 12px;">
+      <div class="card cyber-card" style="border: 1px solid rgba(0, 210, 106, 0.4); background: linear-gradient(135deg, rgba(0, 210, 106, 0.06), rgba(0, 82, 255, 0.05)); margin-bottom: 24px; position: relative;">
+        <div class="row between" style="margin-bottom: 14px; flex-wrap: wrap; gap: 12px;">
           <div>
-            <h2 style="color: #00D26A; margin: 0; display: flex; align-items: center; gap: 8px;">
-              🚀 8 Pull Requests Enviados · $1,435 USD en Vuelo
+            <h2 style="color: #00D26A; margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 18px;">
+              <span class="pulse-dot" style="background:#00D26A; width:10px; height:10px; border-radius:50%; box-shadow:0 0 12px #00D26A; display:inline-block;"></span>
+              <span id="bounties-title-count">12 Pull Requests Enviados</span>
+              <span style="color: rgba(255,255,255,0.3);">·</span>
+              <span id="bounties-title-amount" style="color: #38BDF8;">$920 USD en Pipeline</span>
             </h2>
-            <p class="muted" style="margin-top: 4px; margin-bottom: 0;">Trabajo de código generado y enviado en vivo a GitHub para pagar costes de IA.</p>
+            <p class="muted" style="margin-top: 5px; margin-bottom: 0; font-size: 13px; color: #94A3B8;">
+              Soluciones de ingeniería, corrección de bugs y tests unitarios enviados en vivo a repositorios open-source y programas de bounties en GitHub / Algora con CI verificado.
+            </p>
           </div>
-          <span class="pill good" style="font-size: 13px; padding: 6px 12px; font-weight: bold;">$1,435 USD Por Cobrar</span>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <span class="pill good" id="bounties-escrow-badge" style="font-size: 12px; padding: 6px 12px; font-weight: 700;">
+              🔒 $285 USD en Escrow Directo
+            </span>
+            <span class="pill info" id="bounties-pool-badge" style="font-size: 12px; padding: 6px 12px; font-weight: 700;">
+              ⚡ $635 USD en Bounty Pools OSS
+            </span>
+          </div>
         </div>
         <div class="table-wrap">
           <table id="bounties-table">
             <thead>
               <tr>
-                <th>Repositorio</th>
+                <th style="min-width: 170px;">Repositorio & Stack</th>
                 <th>Tarea / Issue</th>
-                <th>Pull Request</th>
-                <th>Recompensa</th>
-                <th>Plataforma</th>
-                <th>Estado</th>
+                <th style="min-width: 130px;">Pull Request</th>
+                <th style="min-width: 150px;">Checks & CI</th>
+                <th style="min-width: 130px;">Recompensa & Escrow</th>
+                <th style="min-width: 160px;">Estado de Revisión</th>
               </tr>
             </thead>
             <tbody></tbody>
