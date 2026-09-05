@@ -147,8 +147,22 @@ export function createRegistry({ store, config, runners }) {
 
   /** Marca como fallidos los agentes que quedaron "running" en un arranque anterior. */
   function recoverStale() {
-    for (const agent of active()) {
-      store.upsert("agents", { id: agent.id, status: "failed", finishedAt: new Date().toISOString(), report: { error: "Proceso reiniciado" } });
+    const seen = new Set();
+    const unique = [];
+    for (const a of (store.state.agents || [])) {
+      if (!seen.has(a.id)) {
+        seen.add(a.id);
+        unique.push(a);
+      }
+    }
+    store.state.agents = unique;
+    for (const agent of store.state.agents) {
+      if (["running", "starting"].includes(agent.status)) {
+        agent.status = "failed";
+        agent.finishedAt = new Date().toISOString();
+        agent.report = { error: "Proceso reiniciado" };
+        store.upsert("agents", agent);
+      }
     }
   }
 
