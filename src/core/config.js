@@ -117,10 +117,16 @@ export function buildConfig(env = process.env) {
       defaultPriceUsd: num(env.X402_DEFAULT_PRICE_USD, 0.01)
     },
     policy: {
-      // never: siempre espera aprobación humana. verified: envía solo si el pagador está verificado y el revisor aprueba. always: envía siempre.
-      autoSubmitMode: ["always", "true", "1", "yes", "on"].includes(String(env.AUTO_SUBMIT ?? "").toLowerCase()) ? "always"
-        : String(env.AUTO_SUBMIT ?? "").toLowerCase() === "verified" ? "verified" : "never",
-      autoSubmit: ["always", "true", "1", "yes", "on"].includes(String(env.AUTO_SUBMIT ?? "").toLowerCase()),
+      autoSubmitMode: (() => {
+        const clean = String(env.AUTO_SUBMIT ?? "").split(/[\s#]/)[0].trim().toLowerCase();
+        if (["always", "true", "1", "yes", "on"].includes(clean)) return "always";
+        if (clean === "verified") return "verified";
+        return "never";
+      })(),
+      autoSubmit: (() => {
+        const clean = String(env.AUTO_SUBMIT ?? "").split(/[\s#]/)[0].trim().toLowerCase();
+        return ["always", "true", "1", "yes", "on"].includes(clean);
+      })(),
       maxJobCostUsd: num(env.MAX_JOB_COST_USD, 0.5),
       maxEstimatedHours: num(env.MAX_ESTIMATED_HOURS, 6),
       maxAttemptsPerOpportunity: num(env.MAX_ATTEMPTS_PER_OPPORTUNITY, 2),
