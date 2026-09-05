@@ -2,6 +2,5 @@
 node_modules/
 .env
 coverage/
-data/state.json
-data/*.json
-data/
+data/*.tmp
+data/*.bak
