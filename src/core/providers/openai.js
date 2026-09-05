@@ -39,12 +39,12 @@ export function fromOpenAiResponse(body) {
   return {
     content,
     stop_reason: stopMap[choice.finish_reason] ?? "end_turn",
-    usage: { input_tokens: body.usage?.prompt_tokens ?? 0, output_tokens: body.usage?.completion_tokens ?? 0 },
+    usage: { input_tokens: body.usage?.prompt_tokens ?? 0, cached_tokens: body.usage?.prompt_tokens_details?.cached_tokens ?? 0, output_tokens: body.usage?.completion_tokens ?? 0 },
     model: body.model
   };
 }
 
-export function createOpenAiProvider({ apiKey, defaults, baseUrl = "https://api.openai.com/v1", fetchImpl = fetch }) {
+export function createOpenAiProvider({ apiKey, defaults, baseUrl = "https://api.openai.com/v1", fetchImpl = fetch, serviceTier = "" }) {
   return {
     name: "openai",
     defaults,
@@ -52,13 +52,20 @@ export function createOpenAiProvider({ apiKey, defaults, baseUrl = "https://api.
       const request = { model, messages: toOpenAiMessages(system, messages), max_completion_tokens: maxTokens };
       if (tools?.length) request.tools = tools.map((t) => ({ type: "function", function: { name: t.name, description: t.description, parameters: t.input_schema } }));
       if (/^(gpt-5|o[1-9])/.test(model)) request.reasoning_effort = EFFORT[effort] ?? "medium";
+      if (serviceTier) request.service_tier = serviceTier;
       const response = await fetchImpl(`${baseUrl}/chat/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
         body: JSON.stringify(request)
       });
       const body = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(`OpenAI ${response.status}: ${body.error?.message ?? JSON.stringify(body).slice(0, 200)}`);
+      if (!response.ok) {
+        const error = new Error(`OpenAI ${response.status}: ${body.error?.message ?? JSON.stringify(body).slice(0, 200)}`);
+        error.status = response.status;
+        const retryAfter = Number(response.headers?.get?.("retry-after"));
+        if (Number.isFinite(retryAfter) && retryAfter > 0) error.retryAfterMs = retryAfter * 1000;
+        throw error;
+      }
       return fromOpenAiResponse(body);
     }
   };

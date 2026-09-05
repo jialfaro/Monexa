@@ -3,19 +3,26 @@
  * Usa la API pública de búsqueda; el token es opcional pero sube el límite de peticiones.
  */
 const REWARD_PATTERNS = [
-  /\/bounty\s+\$?\s*([\d,]+(?:\.\d+)?)/i,
-  /bounty[^$\d]{0,40}\$\s*([\d,]+(?:\.\d+)?)/i,
-  /\$\s*([\d,]+(?:\.\d+)?)\s*(?:usd|usdc|bounty|reward)/i,
-  /([\d,]+(?:\.\d+)?)\s*(usdc|usdt|dai|eth|sol|btc)\b/i
+  /\/bounty\s+\$?\s*([\d,]+(?:\.\d+)?)\s*(k)?/i,
+  /(?:bounty|reward|pledged?|funding|funded)[^$\d]{0,40}\$\s*([\d,]+(?:\.\d+)?)\s*(k)?/i,
+  /\$\s*([\d,]+(?:\.\d+)?)\s*(k)?[^$\d]{0,40}(?:bounty|reward|pledged?|funding|funded)/i,
+  /💎\s*[^$\d]{0,20}\$?\s*([\d,]+(?:\.\d+)?)\s*(k)?/i,
+  /\$\s*([\d,]+(?:\.\d+)?)\s*(k)?\s*(?:usd|usdc|bounty|reward)/i,
+  /([\d,]+(?:\.\d+)?)\s*(k)?\s*(usdc|usdt|dai|eth|sol|btc)\b/i
 ];
 
 export function extractReward(text = "") {
   for (const pattern of REWARD_PATTERNS) {
     const match = text.match(pattern);
     if (match) {
-      const amount = Number(match[1].replace(/,/g, ""));
+      let amount = Number(match[1].replace(/,/g, ""));
+      if (match[2] && String(match[2]).toLowerCase() === "k") {
+        amount *= 1000;
+      }
       if (Number.isFinite(amount) && amount > 0) {
-        const asset = match[2] ? match[2].toUpperCase() : "USD";
+        const assetMatch = match[3];
+        const isAsset = assetMatch && ["USDC", "USDT", "DAI", "ETH", "SOL", "BTC"].includes(String(assetMatch).toUpperCase());
+        const asset = isAsset ? String(assetMatch).toUpperCase() : "USD";
         return { amount, asset };
       }
     }
@@ -26,7 +33,17 @@ export function extractReward(text = "") {
 export function issueToOpportunity(issue) {
   const labels = (issue.labels ?? []).map((l) => (typeof l === "string" ? l : l.name)).filter(Boolean);
   const text = `${issue.title}\n${issue.body ?? ""}\n${labels.join(" ")}`;
-  const reward = extractReward(text);
+  let reward = extractReward(text);
+  if (!reward && labels.some((l) => /bounty|reward|💎|polar|algora|opire/i.test(l))) {
+    for (const label of labels) {
+      const match = label.match(/^\$?\s*([\d,]+(?:\.\d+)?)\s*(k)?$/i);
+      if (match) {
+        let amount = Number(match[1].replace(/,/g, ""));
+        if (match[2]?.toLowerCase() === "k") amount *= 1000;
+        if (amount > 0) { reward = { amount, asset: "USD" }; break; }
+      }
+    }
+  }
   const repo = issue.repository_url?.replace("https://api.github.com/repos/", "") ?? "";
   const riskFlags = [];
   if (/kyc|identity verification|passport/i.test(text)) riskFlags.push("kyc");

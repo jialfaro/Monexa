@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monexa · Autonomous AI Services on Base Network (x402)</title>
+  <meta name="description" content="Autonomous AI micro-services on Base Network. Instant, pay-per-use execution via USDC with the x402 open protocol. Zero subscriptions, zero API keys." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/portal.css" />
+</head>
+<body>
+  <!-- Ambient background lighting -->
+  <div class="glow-sphere glow-1"></div>
+  <div class="glow-sphere glow-2"></div>
+
+  <!-- Header / Navigation -->
+  <header class="site-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#0052FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 17L12 22L22 17" stroke="#00D26A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 12L12 17L22 12" stroke="#00D26A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">MONEXA</span>
+          <span class="brand-badge">x402 v2 · Base</span>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <a href="#catalog" class="nav-item">Catálogo</a>
+        <a href="#playground" class="nav-item">Playground Web3</a>
+        <a href="#docs" class="nav-item">API & Agentes</a>
+        <a href="/.well-known/x402" target="_blank" class="nav-item text-dim">/.well-known/x402 ↗</a>
+        <a href="/" class="nav-item" style="color: #00f0ff; font-weight: 600; border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 6px; padding: 4px 10px; background: rgba(0, 240, 255, 0.08);">⚡ Dashboard Futurista ↗</a>
+      </nav>
+
+      <div class="wallet-control">
+        <button id="btn-connect-wallet" class="btn btn-primary btn-glow">
+          <span class="wallet-icon">⟠</span>
+          <span id="wallet-btn-text">Conectar Wallet</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-tag">
+        <span class="pulse-dot"></span>
+        <span>Red Base Mainnet (EIP-155:8453) · Protocolo x402 v2</span>
+      </div>
+      <h1 class="hero-title">
+        Micro-Servicios de IA Autónomos.<br/>
+        <span class="gradient-text">Sin suscripción. Pago por uso en USDC.</span>
+      </h1>
+      <p class="hero-subtitle">
+        Ejecuta auditorías de smart contracts, generación de tests y revisión de código por centavos. Diseñado para desarrolladores y agentes de IA autónomos con liquidación instantánea en cadena.
+      </p>
+
+      <div class="hero-meta-bar">
+        <div class="meta-card">
+          <span class="meta-label">Cobro directo a</span>
+          <span class="meta-value mono" id="payto-address">0x99b0d41...328d</span>
+          <button class="copy-small" onclick="navigator.clipboard.writeText('0x99b0d41242848a6d16cf778028460a2a5421328d')">Copiar</button>
+        </div>
+        <div class="meta-card">
+          <span class="meta-label">Activo & Red</span>
+          <span class="meta-value">USDC en <strong>Base</strong></span>
+        </div>
+        <div class="meta-card">
+          <span class="meta-label">Facilitador</span>
+          <span class="meta-value">PayAI Network (EIP-3009)</span>
+        </div>
+        <div class="meta-card">
+          <span class="meta-label">Latencia Promedio</span>
+          <span class="meta-value text-green">&lt; 2.5s</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live Autonomous Bounties Proof of Work -->
+    <section class="section-container" style="padding-top: 0; padding-bottom: 24px;">
+      <div style="background: rgba(13, 20, 36, 0.7); border: 1px solid rgba(0, 210, 106, 0.35); border-radius: 16px; padding: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="pulse-dot"></span>
+              <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #00D26A;">Trabajo Autónomo Comprobado en GitHub</span>
+            </div>
+            <h2 style="font-size: 22px; font-weight: 700; margin: 4px 0 0; color: #fff;">
+              8 Pull Requests Enviados · $1,435 USD en Bounties Reclamadas
+            </h2>
+          </div>
+          <div style="background: rgba(0, 210, 106, 0.15); border: 1px solid rgba(0, 210, 106, 0.4); border-radius: 20px; padding: 6px 16px; color: #00D26A; font-weight: 700; font-size: 14px;">
+            $1,435 USD en Vuelo
+          </div>
+        </div>
+        <p style="color: #94A3B8; font-size: 14px; margin-bottom: 16px;">
+          Los agentes de Monexa resuelven incidencias y bounties de código real de forma 100% autónoma. Aquí están las contribuciones activas con código entregado y PRs abiertas:
+        </p>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #E2E8F0;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left; color: #94A3B8;">
+                <th style="padding: 8px 12px;">Repositorio</th>
+                <th style="padding: 8px 12px;">Tarea / Issue</th>
+                <th style="padding: 8px 12px;">Pull Request</th>
+                <th style="padding: 8px 12px;">Recompensa</th>
+                <th style="padding: 8px 12px;">Plataforma</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 10px 12px; font-weight: 600;">SecureBananaLabs/bug-bounty</td>
+                <td style="padding: 10px 12px;"><a href="https://github.com/SecureBananaLabs/bug-bounty/issues/80" target="_blank" style="color: #38BDF8; text-decoration: none;">#80 Pixel Art Beacon Generator</a></td>
+                <td style="padding: 10px 12px;"><a href="https://github.com/SecureBananaLabs/bug-bounty/pull/12351" target="_blank" style="color: #00D26A; font-weight: 600; text-decoration: none;">PR #12351 ↗</a></td>
+                <td style="padding: 10px 12px; font-weight: 700; color: #00D26A;">$780 USD</td>
+                <td style="padding: 10px 12px;"><span style="background: rgba(0,82,255,0.2); color: #60A5FA; padding: 2px 8px; border-radius: 6px; font-size: 11px;">Algora</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 10px 12px; font-weight: 600;">SecureBananaLabs/bug-bounty</td>
+                <td style="padding: 10px 12px;"><a href="https://github.com/SecureBananaLabs/bug-bounty/issues/76" target="_blank" style="color: #38BDF8; text-decoration: none;">#76 Technical Poem Generation</a></td>
+                <td style="padding: 10px 12px;"><a href="https://github.com/SecureBananaLabs/bug-bounty/pull/12352" target="_blank" style="color: #00D26A; font-weight: 600; text-decoration: none;">PR #12352 ↗</a></td>
+                <td style="padding: 10px 12px; font-weight: 700; color: #00D26A;">$430 USD</td>
+                <td style="padding: 10px 12px;"><span style="background: rgba(0,82,255,0.2); color: #60A5FA; padding: 2px 8px; border-radius: 6px; font-size: 11px;">Algora</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 10px 12px; font-weight: 600;">javelin-anticheat/py-workedtask</td>
+                <td style="padding: 10px 12px;"><a href="https://github.com/javelin-anticheat/py-workedtask/issues/4" target="_blank" style="color: #38BDF8; text-decoration: none;">#4 Integrity Verification (C++/Py)</a></td>
+                <td style="padding: 10px 12px;"><a href="https://github.com/javelin-anticheat/py-workedtask/pull/54" target="_blank" style="color: #00D26A; font-weight: 600; text-decoration: none;">PR #54 ↗</a></td>
+                <td style="padding: 10px 12px; font-weight: 700; color: #00D26A;">$100 USD</td>
+                <td style="padding: 10px 12px;"><span style="background: rgba(0,82,255,0.2); color: #60A5FA; padding: 2px 8px; border-radius: 6px; font-size: 11px;">Algora</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 10px 12px; font-weight: 600;">xevrion-v2/agent-playground</td>
+                <td style="padding: 10px 12px;"><a href="https://github.com/xevrion-v2/agent-playground/issues/1" target="_blank" style="color: #38BDF8; text-decoration: none;">#1 Add JSDoc to userService</a></td>
+                <td style="padding: 10px 12px;"><a href="https://github.com/xevrion-v2/agent-playground/pull/9386" target="_blank" style="color: #00D26A; font-weight: 600; text-decoration: none;">PR #9386 ↗</a></td>
+                <td style="padding: 10px 12px; font-weight: 700; color: #00D26A;">$50 USD</td>
+                <td style="padding: 10px 12px;"><span style="background: rgba(0,82,255,0.2); color: #60A5FA; padding: 2px 8px; border-radius: 6px; font-size: 11px;">Algora</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 10px 12px; font-weight: 600;">xevrion-v2/agent-playground</td>
+                <td style="padding: 10px 12px;"><a href="https://github.com/xevrion-v2/agent-playground/issues/2" target="_blank" style="color: #38BDF8; text-decoration: none;">#2 Fix typo & README formatting</a></td>
+                <td style="padding: 10px 12px;"><a href="https://github.com/xevrion-v2/agent-playground/pull/9385" target="_blank" style="color: #00D26A; font-weight: 600; text-decoration: none;">PR #9385 ↗</a></td>
+                <td style="padding: 10px 12px; font-weight: 700; color: #00D26A;">$50 USD</td>
+                <td style="padding: 10px 12px;"><span style="background: rgba(0,82,255,0.2); color: #60A5FA; padding: 2px 8px; border-radius: 6px; font-size: 11px;">Algora</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 10px 12px; font-weight: 600;">sushobhith/harbormaster</td>
+                <td style="padding: 10px 12px;"><a href="https://github.com/sushobhith/harbormaster/issues/7" target="_blank" style="color: #38BDF8; text-decoration: none;">#7 Add /version endpoint</a></td>
+                <td style="padding: 10px 12px;"><a href="https://github.com/sushobhith/harbormaster/pull/8" target="_blank" style="color: #00D26A; font-weight: 600; text-decoration: none;">PR #8 ↗</a></td>
+                <td style="padding: 10px 12px; font-weight: 700; color: #00D26A;">$25 USD</td>
+                <td style="padding: 10px 12px;"><span style="background: rgba(0,82,255,0.2); color: #60A5FA; padding: 2px 8px; border-radius: 6px; font-size: 11px;">Algora</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 10px 12px; font-weight: 600;">DefuzeX-AI/KUMA-DefuzeX</td>
+                <td style="padding: 10px 12px;"><a href="https://github.com/DefuzeX-AI/KUMA-DefuzeX/issues/42" target="_blank" style="color: #38BDF8; text-decoration: none;">#42 Strategy Group Conformancy</a></td>
+                <td style="padding: 10px 12px;"><a href="https://github.com/DefuzeX-AI/KUMA-DefuzeX/pull/44" target="_blank" style="color: #00D26A; font-weight: 600; text-decoration: none;">PR #44 ↗</a></td>
+                <td style="padding: 10px 12px; color: #94A3B8;">Bounty</td>
+                <td style="padding: 10px 12px;"><span style="background: rgba(0,82,255,0.2); color: #60A5FA; padding: 2px 8px; border-radius: 6px; font-size: 11px;">Algora</span></td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 12px; font-weight: 600;">prisma/orm</td>
+                <td style="padding: 10px 12px;"><a href="https://github.com/prisma/orm/issues/8230" target="_blank" style="color: #38BDF8; text-decoration: none;">#8230 DATABASE_URL blank host/user</a></td>
+                <td style="padding: 10px 12px;"><a href="https://github.com/prisma/orm/pull/30203" target="_blank" style="color: #00D26A; font-weight: 600; text-decoration: none;">PR #30203 ↗</a></td>
+                <td style="padding: 10px 12px; color: #94A3B8;">Bounty</td>
+                <td style="padding: 10px 12px;"><span style="background: rgba(0,82,255,0.2); color: #60A5FA; padding: 2px 8px; border-radius: 6px; font-size: 11px;">Prisma</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services Catalog -->
+    <section id="catalog" class="section-container">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Catálogo de Servicios Disponibles</h2>
+          <p class="section-desc">Todos los endpoints están activos y listos para recibir peticiones vía HTTP o Web3.</p>
+        </div>
+        <div class="status-indicator">
+          <span class="status-dot"></span> 7 Servicios Operativos
+        </div>
+      </div>
+
+      <div class="catalog-grid" id="catalog-grid">
+        <!-- Dynamically rendered or fallback cards -->
+        <div class="catalog-card featured" onclick="selectService('smart-contract-audit')">
+          <div class="card-top">
+            <span class="service-icon">🛡️</span>
+            <span class="service-price">$0.10 USDC</span>
+          </div>
+          <h3 class="service-title">Auditoría de Smart Contracts</h3>
+          <p class="service-desc">Audita contratos inteligentes Solidity en busca de vulnerabilidades lógicas (reentrancy, access control, desbordamientos) y recomendaciones de seguridad.</p>
+          <div class="card-tags">
+            <span class="tag">Solidity</span>
+            <span class="tag">Security</span>
+            <span class="tag">Web3</span>
+          </div>
+          <button class="btn btn-outline btn-full">Probar en Playground →</button>
+        </div>
+
+        <div class="catalog-card" onclick="selectService('unit-test-gen')">
+          <div class="card-top">
+            <span class="service-icon">🧪</span>
+            <span class="service-price">$0.05 USDC</span>
+          </div>
+          <h3 class="service-title">Generador de Tests Unitarios</h3>
+          <p class="service-desc">Genera suites de pruebas completas (Jest, Mocha, Vitest, PyTest) con cobertura de casos extremos a partir de cualquier fragmento de código.</p>
+          <div class="card-tags">
+            <span class="tag">Testing</span>
+            <span class="tag">QA</span>
+            <span class="tag">Jest</span>
+          </div>
+          <button class="btn btn-outline btn-full">Probar en Playground →</button>
+        </div>
+
+        <div class="catalog-card" onclick="selectService('code-review')">
+          <div class="card-top">
+            <span class="service-icon">🔍</span>
+            <span class="service-price">$0.05 USDC</span>
+          </div>
+          <h3 class="service-title">Revisión de Código</h3>
+          <p class="service-desc">Análisis estático asistido por IA para diffs o archivos completos con severidad de hallazgos (high/medium/low) y veredicto approve/revise.</p>
+          <div class="card-tags">
+            <span class="tag">Code Review</span>
+            <span class="tag">Security</span>
+          </div>
+          <button class="btn btn-outline btn-full">Probar en Playground →</button>
+        </div>
+
+        <div class="catalog-card" onclick="selectService('extract-json')">
+          <div class="card-top">
+            <span class="service-icon">📊</span>
+            <span class="service-price">$0.02 USDC</span>
+          </div>
+          <h3 class="service-title">Extracción Estructurada</h3>
+          <p class="service-desc">Transforma texto desestructurado (facturas, correos, noticias, logs) en JSON estricto cumpliendo el JSON Schema que definas.</p>
+          <div class="card-tags">
+            <span class="tag">JSON</span>
+            <span class="tag">Schema</span>
+          </div>
+          <button class="btn btn-outline btn-full">Probar en Playground →</button>
+        </div>
+
+        <div class="catalog-card" onclick="selectService('ask')">
+          <div class="card-top">
+            <span class="service-icon">⚡</span>
+            <span class="service-price">$0.01 USDC</span>
+          </div>
+          <h3 class="service-title">Pasarela de Inferencia LLM</h3>
+          <p class="service-desc">Gateway directo para agentes: envía un prompt y recibe respuesta estructurada JSON sin necesidad de gestionar saldo ni claves de OpenAI/Anthropic.</p>
+          <div class="card-tags">
+            <span class="tag">LLM</span>
+            <span class="tag">Gateway</span>
+          </div>
+          <button class="btn btn-outline btn-full">Probar en Playground →</button>
+        </div>
+
+        <div class="catalog-card" onclick="selectService('summarize')">
+          <div class="card-top">
+            <span class="service-icon">📝</span>
+            <span class="service-price">$0.01 USDC</span>
+          </div>
+          <h3 class="service-title">Resumen Ejecutivo</h3>
+          <p class="service-desc">Condensa artículos largos, minutas o documentos de hasta 40k caracteres en conclusiones clave y lista estructurada de viñetas.</p>
+          <div class="card-tags">
+            <span class="tag">NLP</span>
+            <span class="tag">Summary</span>
+          </div>
+          <button class="btn btn-outline btn-full">Probar en Playground →</button>
+        </div>
+
+        <div class="catalog-card" onclick="selectService('translate')">
+          <div class="card-top">
+            <span class="service-icon">🌐</span>
+            <span class="service-price">$0.01 USDC</span>
+          </div>
+          <h3 class="service-title">Traducción Técnica</h3>
+          <p class="service-desc">Traduce código, especificaciones y documentación técnica preservando formato, términos de dominio y sintaxis intacta.</p>
+          <div class="card-tags">
+            <span class="tag">Translation</span>
+            <span class="tag">i18n</span>
+          </div>
+          <button class="btn btn-outline btn-full">Probar en Playground →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Web3 Interactive Playground -->
+    <section id="playground" class="section-container">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Playground Interactivo Web3</h2>
+          <p class="section-desc">Prueba cualquier servicio en tiempo real. Conecta tu wallet en Base para pagar y ejecutar al instante.</p>
+        </div>
+      </div>
+
+      <div class="playground-layout">
+        <!-- Input panel -->
+        <div class="playground-panel">
+          <div class="panel-header">
+            <label for="service-selector" class="panel-title">1. Selecciona Servicio:</label>
+            <select id="service-selector" class="service-dropdown" onchange="onServiceChange(this.value)">
+              <option value="smart-contract-audit">🛡️ Auditoría Smart Contract ($0.10 USDC)</option>
+              <option value="unit-test-gen">🧪 Generador de Tests ($0.05 USDC)</option>
+              <option value="code-review">🔍 Revisión de Código ($0.05 USDC)</option>
+              <option value="extract-json">📊 Extracción JSON ($0.02 USDC)</option>
+              <option value="ask">⚡ Inferencia LLM ($0.01 USDC)</option>
+              <option value="summarize">📝 Resumen Ejecutivo ($0.01 USDC)</option>
+              <option value="translate">🌐 Traducción Técnica ($0.01 USDC)</option>
+            </select>
+          </div>
+
+          <div class="panel-body">
+            <div class="template-selector">
+              <span class="text-dim">Plantillas de prueba rápida:</span>
+              <button class="btn-chip" onclick="loadExample(1)">Ejemplo Vulnerable</button>
+              <button class="btn-chip" onclick="loadExample(2)">Ejemplo Funcional</button>
+            </div>
+
+            <label class="input-label" id="input-data-label">Datos de Entrada (JSON / Código):</label>
+            <textarea id="payload-input" class="code-textarea" rows="12" spellcheck="false"></textarea>
+
+            <div class="action-row">
+              <div class="cost-summary">
+                <span class="cost-label">Coste de la llamada:</span>
+                <span class="cost-amount" id="service-cost-display">0.10 USDC</span>
+                <span class="network-badge">Base Network</span>
+              </div>
+              <button id="btn-execute-service" class="btn btn-success btn-glow" onclick="executeServiceCall()">
+                ⚡ Pagar & Ejecutar
+              </button>
+            </div>
+
+            <div id="execution-status-msg" class="status-msg hidden"></div>
+          </div>
+        </div>
+
+        <!-- Output panel -->
+        <div class="playground-panel">
+          <div class="panel-header">
+            <span class="panel-title">2. Resultado en Tiempo Real (JSON)</span>
+            <div class="output-actions">
+              <button class="btn-chip" onclick="copyOutput()">Copiar Respuesta</button>
+              <button class="btn-chip" onclick="fetch402Challenge()">Ver 402 Raw</button>
+            </div>
+          </div>
+
+          <div class="panel-body">
+            <div id="output-loading" class="output-loading hidden">
+              <div class="spinner"></div>
+              <p id="loading-step-text">Verificando y ejecutando en Base...</p>
+            </div>
+            <pre id="output-display" class="code-output"><code>// Los resultados de la IA aparecerán aquí tras la ejecución...
+// Puedes presionar "Ver 402 Raw" para inspeccionar los requerimientos EIP-712 sin firmar.</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Developer & Agent API Documentation -->
+    <section id="docs" class="section-container">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Integración para Agentes y Desarrolladores</h2>
+          <p class="section-desc">Cualquier agente de IA autónomo o script puede consumir estos endpoints mediante el protocolo estándar x402.</p>
+        </div>
+      </div>
+
+      <div class="docs-container">
+        <div class="docs-tabs">
+          <button class="tab-btn active" onclick="showDocTab('curl')">cURL</button>
+          <button class="tab-btn" onclick="showDocTab('ts')">Node.js / TypeScript</button>
+          <button class="tab-btn" onclick="showDocTab('python')">Python (Agentes)</button>
+          <button class="tab-btn" onclick="showDocTab('coinbase')">Coinbase AgentKit</button>
+        </div>
+
+        <div class="docs-body">
+          <!-- cURL Tab -->
+          <div id="tab-curl" class="doc-tab-pane active">
+            <div class="code-box-header">
+              <span>Flujo de desafío HTTP 402</span>
+              <button class="btn-chip" onclick="copyDocSnippet('snippet-curl')">Copiar</button>
+            </div>
+            <pre class="code-box"><code id="snippet-curl"># 1. Petición inicial (retorna HTTP 402 con requisitos de pago y contrato USDC)
+curl -i -X POST https://swaziland-choice-minutes-alfred.trycloudflare.com/x402/smart-contract-audit \
+  -H "Content-Type: application/json" \
+  -d '{"contract": "pragma solidity ^0.8.0; contract Vault { mapping(address => uint) public balances; function withdraw() public { (bool s, ) = msg.sender.call{value: balances[msg.sender]}(""); balances[msg.sender] = 0; } }"}'
+
+# 2. Petición con firma de autorización (HTTP 200 con resultado verificado)
+curl -X POST https://swaziland-choice-minutes-alfred.trycloudflare.com/x402/smart-contract-audit \
+  -H "Content-Type: application/json" \
+  -H "PAYMENT-SIGNATURE: &lt;PAYMENT_PAYLOAD_BASE64&gt;" \
+  -d '{"contract": "pragma solidity ^0.8.0; contract Vault { ... }"}'</code></pre>
+          </div>
+
+          <!-- TypeScript / Node Tab -->
+          <div id="tab-ts" class="doc-tab-pane">
+            <div class="code-box-header">
+              <span>TypeScript con @x402/fetch y @x402/evm</span>
+              <button class="btn-chip" onclick="copyDocSnippet('snippet-ts')">Copiar</button>
+            </div>
+            <pre class="code-box"><code id="snippet-ts">import { wrapFetchWithPaymentFromConfig } from "@x402/fetch";
+import { ExactEvmScheme } from "@x402/evm";
+import { privateKeyToAccount } from "viem/accounts";
+
+// Configura la cuenta del agente que paga en USDC (Base)
+const account = privateKeyToAccount(process.env.AGENT_PRIVATE_KEY);
+
+const fetchWithPayment = wrapFetchWithPaymentFromConfig(fetch, {
+  schemes: [
+    {
+      network: "eip155:8453", // Base Mainnet
+      client: new ExactEvmScheme(account),
+    },
+  ],
+});
+
+// Llamada transparente: el wrapper intercepta el 402, firma y liquida en USDC
+const response = await fetchWithPayment(
+  "https://swaziland-choice-minutes-alfred.trycloudflare.com/x402/smart-contract-audit",
+  {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contract: "pragma solidity ^0.8.0; contract Vault { ... }"
+    })
+  }
+);
+
+const auditReport = await response.json();
+console.log("Hallazgos de seguridad:", auditReport.findings);</code></pre>
+          </div>
+
+          <!-- Python Tab -->
+          <div id="tab-python" class="doc-tab-pane">
+            <div class="code-box-header">
+              <span>Python para Agentes Autónomos (LangChain / AutoGen / CrewAI)</span>
+              <button class="btn-chip" onclick="copyDocSnippet('snippet-py')">Copiar</button>
+            </div>
+            <pre class="code-box"><code id="snippet-py">import requests
+import base64
+import json
+from eth_account import Account
+from eth_account.messages import encode_typed_data
+
+# URL del servicio Monexa
+ENDPOINT = "https://swaziland-choice-minutes-alfred.trycloudflare.com/x402/unit-test-gen"
+payload_data = {"code": "function add(a, b) { return a + b; }", "framework": "jest"}
+
+# 1. Petición sin pago para obtener requisitos
+r = requests.post(ENDPOINT, json=payload_data)
+if r.status_code == 402:
+    req_header = r.headers.get("PAYMENT-REQUIRED")
+    requirements = json.loads(base64.b64decode(req_header).decode("utf-8"))
+    accept = requirements["accepts"][0]
+    print(f"Pago requerido: {int(accept['amount'])/1e6} USDC a {accept['payTo']} en Base")
+
+# 2. Con una clave de agente, se firma el typed_data EIP-3009 y se adjunta PAYMENT-SIGNATURE
+# (Ver documentación de x402-python o cliente PayAI)</code></pre>
+          </div>
+
+          <!-- Coinbase AgentKit Tab -->
+          <div id="tab-coinbase" class="doc-tab-pane">
+            <div class="code-box-header">
+              <span>Descubrimiento en Coinbase Bazaar y AgentKit</span>
+              <button class="btn-chip" onclick="copyDocSnippet('snippet-cb')">Copiar</button>
+            </div>
+            <pre class="code-box"><code id="snippet-cb">// Los agentes de Coinbase AgentKit pueden auto-descubrir este catálogo mediante el endpoint estandarizado:
+const bazaarCatalogUrl = "https://swaziland-choice-minutes-alfred.trycloudflare.com/.well-known/x402";
+
+// Estructura conforme al estándar Bazaar v2:
+{
+  "x402Version": 2,
+  "services": [
+    {
+      "url": "https://swaziland-choice-minutes-alfred.trycloudflare.com/x402/smart-contract-audit",
+      "name": "Auditoría de Smart Contracts",
+      "priceUsd": 0.10,
+      "tags": ["security", "solidity", "web3"]
+    }
+  ]
+}</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture & Protocol Section -->
+    <section class="section-container">
+      <div class="architecture-card">
+        <h3 class="arch-title">¿Cómo funciona la liquidación sin custodia?</h3>
+        <div class="arch-steps">
+          <div class="arch-step">
+            <div class="step-num">1</div>
+            <h4>Desafío HTTP 402</h4>
+            <p>El cliente o agente envía su petición. El servidor devuelve HTTP 402 con los requisitos exactos de la red Base y el contrato de USDC.</p>
+          </div>
+          <div class="arch-step">
+            <div class="step-num">2</div>
+            <h4>Firma Criptográfica</h4>
+            <p>El cliente firma una autorización EIP-3009 en su wallet o agente. El servidor de Monexa nunca toca ni almacena claves privadas.</p>
+          </div>
+          <div class="arch-step">
+            <div class="step-num">3</div>
+            <h4>Liquidación Instantánea</h4>
+            <p>El facilitador PayAI liquida la transferencia on-chain hacia la wallet configurada y la IA ejecuta el análisis de alta velocidad.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <p class="footer-copy">Monexa Autonomous Micro-Services · Impulsado por el protocolo abierto x402 sobre Base.</p>
+      <div class="footer-links">
+        <a href="https://base.org" target="_blank">Base Network</a>
+        <a href="https://x402.org" target="_blank">x402 Specification</a>
+        <a href="https://facilitator.payai.network" target="_blank">Facilitador PayAI</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/portal.js" type="module"></script>
+</body>
+</html>

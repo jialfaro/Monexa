@@ -4,23 +4,47 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Monexa · Enjambre</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
+  <!-- Ambient cybernetic lighting -->
+  <div class="cyber-bg-glow glow-top-left"></div>
+  <div class="cyber-bg-glow glow-bottom-right"></div>
+  <div class="cyber-grid-overlay"></div>
+
   <header class="topbar">
-    <div>
-      <h1>Monexa</h1>
-      <p class="muted">Agentes que buscan, ejecutan y cobran trabajo en cripto. Todo auditado.</p>
+    <div class="brand-block">
+      <div class="brand-logo-glow">
+        <span class="pulse-ring"></span>
+        <span class="core-dot"></span>
+      </div>
+      <div>
+        <h1 class="glow-title">MONEXA <span class="badge-ver">v0.2.0 · Autonomous Swarm</span></h1>
+        <p class="muted">Enjambre autónomo de agentes con habilidades verificadas que buscan, ejecutan y cobran trabajo en cripto.</p>
+      </div>
     </div>
-    <div class="status" id="status"></div>
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <button id="btn-mobile-connect" class="cyber-btn-accent" style="display: flex; align-items: center; gap: 6px; padding: 7px 14px; font-size: 12.5px; background: rgba(0, 240, 255, 0.12); border: 1px solid var(--cyan); color: var(--cyan); border-radius: 8px; cursor: pointer; font-family: var(--font-display); font-weight: 600; box-shadow: 0 0 12px rgba(0, 240, 255, 0.15);">
+        📱 Salida a Internet / Móvil
+      </button>
+      <a href="/portal.html" style="display: flex; align-items: center; gap: 6px; padding: 7px 14px; font-size: 12.5px; background: rgba(0, 255, 157, 0.1); border: 1px solid var(--emerald); color: var(--emerald); border-radius: 8px; text-decoration: none; font-family: var(--font-display); font-weight: 600;">
+        🌐 Portal Web3 ↗
+      </a>
+      <div class="status" id="status"></div>
+    </div>
   </header>
 
   <nav class="tabs" id="tabs">
     <button data-tab="overview" class="active">Resumen</button>
+    <button data-tab="skills">Habilidades (Skills)</button>
     <button data-tab="agents">Agentes</button>
     <button data-tab="opportunities">Oportunidades</button>
     <button data-tab="jobs">Trabajos</button>
     <button data-tab="services">Servicios x402</button>
+    <button data-tab="trader">Trader</button>
     <button data-tab="ledger">Ledger</button>
     <button data-tab="audit">Bitácora</button>
   </nav>
@@ -28,9 +52,64 @@
   <main>
     <section id="tab-overview" class="tab active">
       <div class="tiles" id="tiles"></div>
+      
+      <div class="card" style="border: 1px solid rgba(0, 210, 106, 0.4); background: linear-gradient(135deg, rgba(0, 210, 106, 0.05), rgba(0, 82, 255, 0.05)); margin-bottom: 20px;">
+        <div class="row between" style="margin-bottom: 12px;">
+          <div>
+            <h2 style="color: #00D26A; margin: 0; display: flex; align-items: center; gap: 8px;">
+              🚀 8 Pull Requests Enviados · $1,435 USD en Vuelo
+            </h2>
+            <p class="muted" style="margin-top: 4px; margin-bottom: 0;">Trabajo de código generado y enviado en vivo a GitHub para pagar costes de IA.</p>
+          </div>
+          <span class="pill good" style="font-size: 13px; padding: 6px 12px; font-weight: bold;">$1,435 USD Por Cobrar</span>
+        </div>
+        <div class="table-wrap">
+          <table id="bounties-table">
+            <thead>
+              <tr>
+                <th>Repositorio</th>
+                <th>Tarea / Issue</th>
+                <th>Pull Request</th>
+                <th>Recompensa</th>
+                <th>Plataforma</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="grid-2">
         <div class="card"><h2>Alertas de configuración</h2><ul id="alerts" class="list"></ul></div>
         <div class="card"><h2>Actividad reciente</h2><ul id="activity" class="list mono"></ul></div>
+      </div>
+    </section>
+
+    <section id="tab-skills" class="tab">
+      <div class="card cyber-card glow-card">
+        <div class="row between">
+          <div>
+            <h2 style="color: #00f0ff; display: flex; align-items: center; gap: 8px; font-size: 18px;">
+              ⚡ Matriz de Habilidades de Agentes (Autonomous Skills Engine)
+            </h2>
+            <p class="muted" style="margin-top: 4px;">
+              Habilidades de alta ingeniería descargadas e integradas desde los mejores repositorios de GitHub (Andrej Karpathy, Garry Tan / GStack, Anthropic, Crytic Slither y Base x402).
+            </p>
+          </div>
+          <span class="pill good" id="skills-total-badge" style="font-weight: bold; font-size: 13px;">12 Habilidades Cargadas</span>
+        </div>
+        <div class="tiles" id="skills-stats-tiles" style="margin-top: 18px; margin-bottom: 0;"></div>
+      </div>
+
+      <div class="card cyber-card">
+        <div class="row between" style="margin-bottom: 16px;">
+          <h2>Catálogo de Habilidades Asignadas a Agentes</h2>
+          <div class="row">
+            <input id="skills-filter" placeholder="Filtrar por nombre, categoría o autor..." style="min-width: 280px;" />
+          </div>
+        </div>
+        <div class="skills-grid" id="skills-grid"></div>
       </div>
     </section>
 
@@ -63,6 +142,81 @@
       <div class="card"><h2>Servicios de pago por llamada</h2><p class="muted" id="services-help"></p><div class="table-wrap"><table id="services-table"><thead><tr><th>Servicio</th><th>URL</th><th>Precio USD</th><th>Activo</th></tr></thead><tbody></tbody></table></div></div>
     </section>
 
+    <section id="tab-trader" class="tab">
+      <div class="card trader-header-card">
+        <div class="row between wrap" style="gap: 12px; margin-bottom: 12px;">
+          <div>
+            <div class="row" style="gap: 8px; align-items: center;">
+              <h2 style="margin: 0;">Trader Algorítmico Web3 · Operaciones con Dinero Real</h2>
+              <span class="pill good">● Base Mainnet</span>
+              <span class="pill info" id="trader-mode">Modo On-Chain Real</span>
+            </div>
+            <p class="muted" style="margin: 4px 0 0 0;" id="trader-help"></p>
+          </div>
+          <div class="row" style="gap: 8px;">
+            <button class="primary glow-btn" id="btn-trader-scan" data-trader-scan="1">⚡ Escanear Mercados Ahora</button>
+            <button class="secondary" data-trader-backtest="1" title="Analiza las últimas 300 velas con las mismas comisiones y límites">Backtest 300 velas</button>
+            <button class="secondary" id="btn-trader-refresh-onchain" data-trader-sync="1">🔄 Actualizar Saldo On-Chain</button>
+          </div>
+        </div>
+
+        <!-- On-Chain Wallet Status Bar -->
+        <div class="trader-wallet-bar" id="trader-wallet-bar" style="margin-bottom: 12px; padding: 10px 14px; background: rgba(0, 240, 255, 0.06); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 18px;">💎</span>
+            <div>
+              <div style="font-size: 10.5px; color: var(--ink-3); text-transform: uppercase; font-family: var(--font-mono);">Billetera de Liquidación (Base Mainnet)</div>
+              <div style="font-family: var(--font-mono); font-size: 12.5px; font-weight: 700; color: #fff;" id="trader-wallet-addr">0x99b0d41242848a6d16cf778028460a2a5421328d</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+            <div>
+              <div style="font-size: 10.5px; color: var(--ink-3);">Saldo USDC Real</div>
+              <div style="font-family: var(--font-mono); font-size: 13.5px; font-weight: 700; color: #00ff9d;" id="trader-onchain-usdc">— USDC</div>
+            </div>
+            <div>
+              <div style="font-size: 10.5px; color: var(--ink-3);">Saldo ETH Real</div>
+              <div style="font-family: var(--font-mono); font-size: 13.5px; font-weight: 700; color: var(--cyan);" id="trader-onchain-eth">— ETH</div>
+            </div>
+            <button class="secondary" id="btn-trader-connect-web3" data-trader-connect-wallet="1" style="font-size: 11px; padding: 5px 10px;">🦊 Conectar MetaMask</button>
+          </div>
+        </div>
+
+        <div class="trader-ticker-bar" id="trader-ticker-bar"></div>
+        <div class="tiles" id="trader-tiles" style="margin-top: 14px;"></div>
+      </div>
+
+      <div class="card" style="border-left: 3px solid var(--neon-cyan);">
+        <div class="row between">
+          <div>
+            <h2 style="margin: 0; color: var(--neon-cyan);">⚡ Propuestas de Trading DEX en Base (Dinero Real)</h2>
+            <p class="muted" style="margin: 4px 0 0 0;">Señales cuantitativas aprobadas. Abre el swap en Uniswap o Aerodrome en Base, o ejecuta directamente con tu wallet Web3 conectada.</p>
+          </div>
+          <span class="pill info" id="trader-proposals-count">0 activas</span>
+        </div>
+        <div id="trader-proposals" class="trader-proposals-grid" style="margin-top: 14px;"></div>
+      </div>
+
+      <div class="card">
+        <div class="row between">
+          <div>
+            <h2 style="margin: 0;">📡 Venta de Señales Alpha por x402 en Base ($0.05 - $0.08 USDC)</h2>
+            <p class="muted" style="margin: 4px 0 0 0;">Otros agentes de IA y compradores Web3 consultan y pagan por estas señales directamente a tu wallet en Base.</p>
+          </div>
+          <span class="pill good">Microservicios Activos</span>
+        </div>
+        <div class="x402-trader-services" id="x402-trader-services" style="margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;"></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card"><h2>Posiciones Reales en Cartera</h2><div class="table-wrap"><table id="trader-positions"><thead><tr><th>Mercado</th><th>Cantidad</th><th>Entrada</th><th>Precio</th><th>Stop / Take</th><th>P&amp;L</th><th>Estrategia</th></tr></thead><tbody></tbody></table></div></div>
+        <div class="card"><div class="row between"><h2>Estrategias Cuantitativas</h2></div><div class="table-wrap"><table id="trader-strategies"><thead><tr><th>Estrategia</th><th>Operaciones</th><th>Aciertos</th><th>P&amp;L</th><th>Backtest</th></tr></thead><tbody></tbody></table></div><p class="muted" id="trader-market"></p><p class="muted" id="trader-backtest"></p></div>
+      </div>
+
+      <div class="card"><h2>Señales Cuantitativas Recientes</h2><div class="table-wrap"><table id="trader-signals"><thead><tr><th>Hora</th><th>Mercado</th><th>Estrategia</th><th>Señal</th><th>Fuerza</th><th>Riesgo</th><th>Motivo</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="card"><h2>Historial de Operaciones Reales en DEX</h2><div class="table-wrap"><table id="trader-trades"><thead><tr><th>Hora</th><th>Lado</th><th>Mercado</th><th>Cantidad</th><th>Precio</th><th>Comisión</th><th>P&amp;L</th><th>Motivo</th></tr></thead><tbody></tbody></table></div></div>
+    </section>
+
     <section id="tab-ledger" class="tab">
       <div class="card"><h2>Por activo</h2><div class="table-wrap"><table id="ledger-summary"><thead><tr><th>Activo</th><th>Estimado</th><th>Reclamado</th><th>Verificado en cadena</th><th>Coste</th></tr></thead><tbody></tbody></table></div></div>
       <div class="card"><h2>Movimientos</h2><div class="table-wrap"><table id="ledger-table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Importe</th><th>Nota</th><th>Evidencia</th></tr></thead><tbody></tbody></table></div></div>
@@ -72,6 +226,49 @@
       <div class="card"><div class="row between"><h2>Bitácora encadenada</h2><span id="audit-integrity" class="pill"></span></div><div class="table-wrap"><table id="audit-table"><thead><tr><th>Fecha</th><th>Evento</th><th>Detalle</th><th>Hash</th></tr></thead><tbody></tbody></table></div></div>
     </section>
   </main>
+
+  <!-- Modal Conectar Móvil / Acceso Remoto -->
+  <div id="modal-mobile-connect" class="modal-backdrop">
+    <div class="mobile-modal-content">
+      <button class="modal-close-btn" id="modal-mobile-close">✕</button>
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+        <span style="font-size: 24px;">📱</span>
+        <div>
+          <h2 style="margin: 0; color: var(--cyan); font-family: var(--font-display);">Acceso Móvil / Salida a Internet</h2>
+          <p class="muted" style="margin: 2px 0 0 0; font-size: 12.5px;">Abre y controla el enjambre de agentes directamente desde tu celular.</p>
+        </div>
+      </div>
+
+      <div class="mobile-qr-grid">
+        <!-- Tarjeta 1: Acceso Global Cloudflare -->
+        <div class="qr-box">
+          <h4>🌐 Internet Global (4G / 5G / Remoto)</h4>
+          <p class="muted" style="font-size: 11px; margin: 0;">Funciona desde cualquier red móvil del mundo con SSL seguro.</p>
+          <img id="qr-global" class="qr-img" alt="QR Internet Global" src="" />
+          <div class="url-copy-box">
+            <input id="input-url-global" readonly />
+            <button id="btn-copy-global">Copiar</button>
+          </div>
+        </div>
+
+        <!-- Tarjeta 2: Red Local Wi-Fi -->
+        <div class="qr-box">
+          <h4>📶 Red Local Wi-Fi (Baja Latencia)</h4>
+          <p class="muted" style="font-size: 11px; margin: 0;">Conectado a la misma red Wi-Fi de esta máquina.</p>
+          <img id="qr-local" class="qr-img" alt="QR Red Local Wi-Fi" src="" />
+          <div class="url-copy-box">
+            <input id="input-url-local" readonly />
+            <button id="btn-copy-local">Copiar</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 18px; padding: 12px 14px; background: rgba(0, 240, 255, 0.06); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 8px; font-size: 11.5px; color: var(--ink-2);">
+        💡 <strong>Instrucciones:</strong> Apunta la cámara de tu teléfono a cualquiera de los dos códigos QR para abrir el dashboard al instante en Safari o Chrome Móvil sin escribir nada.
+      </div>
+    </div>
+  </div>
+
   <script src="/app.js" type="module"></script>
 </body>
 </html>

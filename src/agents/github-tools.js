@@ -86,7 +86,15 @@ export function createGithubTools({ fetchJson, token }) {
         await api(`/repos/${forkRepo}/git/refs/heads/${branchName}`, { method: "PATCH", body: JSON.stringify({ sha: commit.sha, force: true }) });
       });
     const head = forkRepo === repo ? branchName : `${forkRepo.split("/")[0]}:${branchName}`;
-    const pr = await api(`/repos/${repo}/pulls`, { method: "POST", body: JSON.stringify({ title, head, base: baseBranch, body, maintainer_can_modify: true }) });
+    let pr;
+    try {
+      pr = await api(`/repos/${repo}/pulls`, { method: "POST", body: JSON.stringify({ title, head, base: baseBranch, body, maintainer_can_modify: true }) });
+    } catch (error) {
+      if (error.message?.includes("403") && token?.startsWith("github_pat_")) {
+        throw new Error("GitHub 403 Forbidden: Tu token actual es Fine-Grained (github_pat_...). GitHub no permite a los tokens fine-grained abrir Pull Requests en repositorios externos u organizaciones. Debes usar un Personal Access Token (Classic) con permiso 'repo' (inicia con ghp_...) en .env.");
+      }
+      throw error;
+    }
     return { url: pr.html_url, number: pr.number, commitSha: commit.sha, branch: `${forkRepo}:${branchName}` };
   }
 

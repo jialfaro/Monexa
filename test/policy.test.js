@@ -65,7 +65,7 @@ test("el manager no supera MAX_CONCURRENT_WORKERS dentro de un mismo ciclo", asy
   const forever = (ctx) => new Promise((resolve) => ctx.signal.addEventListener("abort", () => resolve({ summary: "fin" })));
   const runners = { worker: forever, scout: async () => ({}), evaluator: async () => ({}) };
   const registry = createRegistry({ store, config: cfg, runners });
-  const llm = { enabled: true, spentTodayUsd: () => 0 };
+  const llm = { enabled: true, spentTodayUsd: () => 0, available: () => ({ ok: true, provider: "test", model: "m" }) };
   runners.manager = createManagerRunner({ store, config: cfg, llm, registry, sources: [] });
   const manager = await registry.spawn({ template: "manager" });
   await wait(60);

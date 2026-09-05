@@ -152,5 +152,15 @@ export function createRegistry({ store, config, runners }) {
     }
   }
 
-  return { spawn, stop, tree, active, checkSpawn, log, recoverStale, waitFor, TEMPLATES };
+  /** Conserva sólo los últimos `keep` agentes terminados para que el estado no crezca sin límite. */
+  function prune({ keep = 400 } = {}) {
+    const finished = store.state.agents.filter((a) => !["running", "starting"].includes(a.status)).sort((a, b) => (b.finishedAt ?? "").localeCompare(a.finishedAt ?? ""));
+    const drop = new Set(finished.slice(keep).map((a) => a.id));
+    if (!drop.size) return 0;
+    store.state.agents = store.state.agents.filter((a) => !drop.has(a.id));
+    store.save();
+    return drop.size;
+  }
+
+  return { spawn, stop, tree, active, checkSpawn, log, recoverStale, waitFor, prune, TEMPLATES };
 }

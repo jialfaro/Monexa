@@ -57,5 +57,16 @@ export function createEvmReader({ rpcUrl, usdc, fetchImpl = fetch }) {
     return transfers;
   }
 
-  return { rpc, blockNumber, usdcBalance, incomingUsdcTransfers };
+  /** Saldo ETH nativo en Base de una dirección. */
+  async function ethBalance(address) {
+    const result = await rpc("eth_getBalance", [address, "latest"]);
+    return Number(BigInt(result)) / 1e18;
+  }
+
+  /** Comprobante de transacción en cadena (Base). */
+  async function getTransactionReceipt(txHash) {
+    return rpc("eth_getTransactionReceipt", [txHash]);
+  }
+
+  return { rpc, blockNumber, usdcBalance, ethBalance, incomingUsdcTransfers, getTransactionReceipt };
 }

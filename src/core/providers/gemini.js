@@ -10,6 +10,7 @@ export function toGeminiContents(messages) {
     const parts = [];
     for (const block of message.content) {
       if (block.type === "text") parts.push(withSignature({ text: block.text }, block));
+      else if (block.type === "thought") parts.push({ thought: true, text: block.text || " ", thoughtSignature: block.thoughtSignature });
       else if (block.type === "tool_use") parts.push(withSignature({ functionCall: { name: block.name, args: block.input ?? {} } }, block));
       else if (block.type === "tool_result") {
         const name = String(block.tool_use_id).split("#")[0];
@@ -31,7 +32,11 @@ export function fromGeminiResponse(body, callCounter = { n: 0 }) {
   }
   const content = [];
   for (const part of candidate.content?.parts ?? []) {
-    if (part.thought) continue; // resumen de razonamiento: no se reenvía como contenido
+    if (part.thought) {
+      // Los bloques de pensamiento con firma deben volver tal cual en el siguiente turno (Gemini 3).
+      if (part.thoughtSignature) content.push({ type: "thought", text: part.text ?? "", thoughtSignature: part.thoughtSignature });
+      continue;
+    }
     const signature = part.thoughtSignature ? { thoughtSignature: part.thoughtSignature } : {};
     if (part.text) content.push({ type: "text", text: part.text, ...signature });
     else if (part.functionCall) {
@@ -51,7 +56,20 @@ function withSignature(part, block) {
 }
 
 function usageOf(body) {
-  return { input_tokens: body.usageMetadata?.promptTokenCount ?? 0, output_tokens: (body.usageMetadata?.candidatesTokenCount ?? 0) + (body.usageMetadata?.thoughtsTokenCount ?? 0) };
+  return {
+    input_tokens: body.usageMetadata?.promptTokenCount ?? 0,
+    cached_tokens: body.usageMetadata?.cachedContentTokenCount ?? 0,
+    output_tokens: (body.usageMetadata?.candidatesTokenCount ?? 0) + (body.usageMetadata?.thoughtsTokenCount ?? 0)
+  };
+}
+
+/** Extrae de la respuesta de error de Gemini cuánto esperar y si el cupo es por minuto o por día. */
+export function geminiErrorInfo(body) {
+  const details = body.error?.details ?? [];
+  const retry = details.find((d) => d["@type"]?.includes("RetryInfo"))?.retryDelay;
+  const quota = details.find((d) => d["@type"]?.includes("QuotaFailure"))?.violations?.[0]?.quotaId ?? "";
+  const retryAfterMs = retry ? Number(String(retry).replace("s", "")) * 1000 : null;
+  return { retryAfterMs, quotaId: quota, perDay: /PerDay|Daily/i.test(quota) };
 }
 
 export function createGeminiProvider({ apiKey, defaults, baseUrl = "https://generativelanguage.googleapis.com/v1beta", fetchImpl = fetch }) {
@@ -69,7 +87,14 @@ export function createGeminiProvider({ apiKey, defaults, baseUrl = "https://gene
         body: JSON.stringify(request)
       });
       const body = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(`Gemini ${response.status}: ${body.error?.message ?? JSON.stringify(body).slice(0, 200)}`);
+      if (!response.ok) {
+        const info = geminiErrorInfo(body);
+        const error = new Error(`Gemini ${response.status}: ${body.error?.message ?? JSON.stringify(body).slice(0, 200)}${info.quotaId ? ` [${info.quotaId}]` : ""}`);
+        error.status = response.status;
+        error.retryAfterMs = info.retryAfterMs;
+        error.perDay = info.perDay;
+        throw error;
+      }
       return fromGeminiResponse(body, counter);
     }
   };

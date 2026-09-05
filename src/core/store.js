@@ -96,7 +96,11 @@ export function emptyState() {
     ledger: [],
     services: [],
     audit: [],
-    usage: []
+    usage: [],
+    trading: [],
+    trades: [],
+    signals: [],
+    proposals: []
   };
 }
 

@@ -55,7 +55,7 @@ test("buildProviders respeta LLM_PROVIDER y exige su clave", () => {
 });
 
 test("conmuta al proveedor de respaldo cuando el principal falla por cuota", async () => {
-  const config = buildConfig({ OPENAI_API_KEY: "o", GEMINI_API_KEY: "g" });
+  const config = buildConfig({ OPENAI_API_KEY: "o", GEMINI_API_KEY: "g", GEMINI_FREE_TIER: "false" });
   const providers = [
     { name: "openai", defaults: { worker: "gpt-5", scout: "gpt-5-mini" }, complete: async () => { const e = new Error("You have no credits remaining"); e.status = 429; throw e; } },
     { name: "gemini", defaults: { worker: "gemini-3.8-flash", scout: "gemini-3.8-flash" }, complete: async ({ model }) => ({ content: [{ type: "text", text: model }], stop_reason: "end_turn", usage: { input_tokens: 1, output_tokens: 1 } }) }
@@ -73,7 +73,7 @@ test("reintenta en el mismo proveedor ante un 429 de velocidad y sólo cambia an
   const { classifyError, retryDelayMs } = await import("../src/core/llm.js");
   assert.equal(classifyError(Object.assign(new Error("Rate limit reached for gpt-5 (RPM): Limit 3. Please try again in 20s."), { status: 429 })), "rate_limit");
   assert.equal(classifyError(new Error("OpenAI 429: You have no credits remaining.")), "switch");
-  assert.equal(classifyError(new Error("Gemini 429: You exceeded your current quota ... free_tier_requests")), "switch");
+  assert.equal(classifyError(new Error("Gemini 429: You exceeded your current quota ... free_tier_requests")), "quota");
   assert.equal(classifyError(Object.assign(new Error("bad request"), { status: 400 })), "fatal");
   assert.equal(retryDelayMs(new Error("try again in 20s"), 1), 21_000);
   assert.equal(retryDelayMs(new Error("x"), 2), 10_000);
@@ -90,4 +90,40 @@ test("reintenta en el mismo proveedor ante un 429 de velocidad y sólo cambia an
   assert.equal(result.provider, "openai");
   assert.equal(calls, 3);
   assert.ok(slept.length >= 2 && slept.every((ms) => ms >= 1000));
+});
+
+test("cupo diario agotado en gpt-5: cae a gpt-5-mini del mismo proveedor y marca el modelo como no disponible", async () => {
+  const config = buildConfig({ OPENAI_API_KEY: "o" });
+  const used = [];
+  const providers = [{
+    name: "openai", defaults: { worker: "gpt-5", scout: "gpt-5-mini" },
+    complete: async ({ model }) => {
+      used.push(model);
+      if (model === "gpt-5") { const e = new Error("Rate limit reached for gpt-5 on requests per day (RPD): Limit 50, Used 50. Please try again in 28m48s."); e.status = 429; throw e; }
+      return { content: [{ type: "text", text: model }], stop_reason: "end_turn", usage: { input_tokens: 1, output_tokens: 1 } };
+    }
+  }];
+  const llm = createLlm({ config, store: createStore(null), providers, sleep: async () => {} });
+  const first = await llm.complete({ agentId: "a", messages: [{ role: "user", content: "x" }] });
+  assert.equal(first.model, "gpt-5-mini");
+  const second = await llm.complete({ agentId: "a", messages: [{ role: "user", content: "x" }] });
+  assert.deepEqual(used, ["gpt-5", "gpt-5-mini", "gpt-5-mini"], "gpt-5 no se vuelve a intentar mientras dure el cupo");
+  assert.equal(second.model, "gpt-5-mini");
+  assert.equal(llm.available("worker").model, "gpt-5-mini");
+  assert.equal(llm.status()[0].key, "openai:gpt-5");
+});
+
+test("sin ningún cupo disponible lanza LLM_UNAVAILABLE con hora de reintento y available() lo refleja", async () => {
+  const config = buildConfig({ OPENAI_API_KEY: "o", GEMINI_API_KEY: "g" });
+  const providers = [
+    { name: "openai", defaults: { worker: "gpt-5", scout: "gpt-5-mini" }, complete: async () => { const e = new Error("Rate limit reached on requests per day (RPD). Please try again in 10m0s."); e.status = 429; throw e; } },
+    { name: "gemini", defaults: { worker: "gemini-3.8-flash", scout: "gemini-3.5-flash-lite" }, complete: async () => { throw new Error("Gemini 429: You exceeded your current quota ... free_tier_requests, limit: 20"); } }
+  ];
+  const llm = createLlm({ config, store: createStore(null), providers, sleep: async () => {} });
+  await assert.rejects(llm.complete({ agentId: "a", messages: [{ role: "user", content: "x" }] }), (e) => e.code === "LLM_UNAVAILABLE" && typeof e.retryAt === "number");
+  const avail = llm.available("worker");
+  assert.equal(avail.ok, false);
+  assert.ok(avail.retryAt > Date.now());
+  const { unavailableDelayMs } = await import("../src/core/llm.js");
+  assert.equal(unavailableDelayMs(new Error("Please try again in 28m48s.")), (28 * 60 + 48) * 1000 + 30_000);
 });
