@@ -1,0 +1,22 @@
+name: Monexa 24/7 Keep-Alive
+
+on:
+  schedule:
+    # Se ejecuta cada 10 minutos para que Render nunca se duerma
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Monexa Health Endpoint
+        run: |
+          echo "Enviando ping a Monexa en Render..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://monexa-2jme.onrender.com/api/health")
+          echo "Respuesta HTTP: $STATUS"
+          if [ "$STATUS" -eq 200 ]; then
+            echo "Monexa está activo y saludable."
+          else
+            echo "Aviso: Código HTTP recibido: $STATUS"
+          fi
