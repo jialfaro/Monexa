@@ -6,9 +6,67 @@ services:
     buildCommand: npm install
     startCommand: node server.mjs
     envVars:
-      - key: NODE_VERSION
-        value: 22.0.0
       - key: PORT
         value: 4173
       - key: HOST
         value: 0.0.0.0
+      - key: REMOTE_DASHBOARD
+        value: "true"
+      - key: TUNNEL
+        value: "none"
+      - key: TRADER_ENABLED
+        value: "true"
+      - key: TRADER_MODE
+        value: "real"
+      - key: TRADER_WATCHLIST
+        value: "BTC-USD,ETH-USD,SOL-USD,AERO-USD,VIRTUAL-USD"
+      - key: X402_NETWORK
+        value: "eip155:8453"
+      - key: AUTO_SUBMIT
+        value: "always"
+      - key: AUTO_SCALE
+        value: "true"
+      - key: MAX_AGENTS
+        value: "8"
+      - key: MAX_DEPTH
+        value: "3"
+      - key: MAX_CHILDREN_PER_AGENT
+        value: "4"
+      - key: MAX_CONCURRENT_WORKERS
+        value: "1"
+      - key: SCOUT_INTERVAL_MINUTES
+        value: "10"
+      - key: RECONCILE_INTERVAL_MINUTES
+        value: "10"
+      - key: MIN_OPPORTUNITY_SCORE
+        value: "60"
+      - key: MAX_ESTIMATED_HOURS
+        value: "24"
+      - key: MAX_JOB_COST_USD
+        value: "0.20"
+      - key: MIN_REVIEW_CONFIDENCE
+        value: "80"
+      - key: MAX_WORKER_ITERATIONS
+        value: "35"
+      - key: DAILY_LLM_BUDGET_USD
+        value: "3"
+      - key: LLM_PROVIDER
+        value: "openai"
+      - key: LLM_FALLBACK
+        value: "true"
+      - key: WORKER_MODEL
+        value: "gpt-5-mini"
+      - key: SCOUT_MODEL
+        value: "gpt-5-mini"
+      - key: BLOCKED_REPOS
+        value: "SecureBananaLabs/bug-bounty,NSPG13/agent-bounties,zhangjiayang6835-cyber/bounty-plaza,tine1117/oss-hunter-livefire,xevrion-v2/agent-playground,UnsafeLabs/Bounty-Hunters"
+      - key: PAYTO_ADDRESS
+        value: "0x99b0d41242848a6d16cf778028460a2a5421328d"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
