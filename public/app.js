@@ -388,9 +388,9 @@ function renderTrader() {
   const sm = tr.summary;
   const pct = (x) => `${((x ?? 0) * 100).toFixed(2)} %`;
 
-  $("#trader-mode").textContent = "Modo On-Chain Real (Base)";
+  $("#trader-mode").textContent = "Mercados en Vivo (Base)";
   $("#trader-mode").className = "pill good";
-  $("#trader-help").textContent = `Monexa escanea ${tr.watchlist.join(", ")} en Base y Coinbase con 5 estrategias algorítmicas cada ${tr.limits.tickMinutes} min. Las operaciones y señales se liquidan en dinero real (USDC/Tokens) en Base a tu billetera.`;
+  $("#trader-help").textContent = `Monexa escanea ${tr.watchlist.join(", ")} en Base y Coinbase con 5 estrategias algorítmicas cada ${tr.limits.tickMinutes} min. Genera señales y propuestas cuantitativas no custodiales. Puedes abrir los swaps en Uniswap/Aerodrome con tu wallet o vender estas señales vía x402 por micro-pagos en USDC.`;
 
   updateOnChainBalance();
 
@@ -418,14 +418,14 @@ function renderTrader() {
     }).join("");
   }
 
-  // 2. Tiles de Dinero Real e Indicadores Clave
+  // 2. Tiles de Indicadores Clave
   const realProfit = tr.realizedDexProfitUsd || 0;
   const x402Revenue = tr.x402SignalRevenueUsd || 0;
   const activeSignalsCount = tr.signals.filter((s) => s.action !== "hold").length;
   const tiles = [
-    ["💰 Ganancias Reales DEX", money(realProfit), "reclamado en USDC a tesorería"],
-    ["⚡ Ventas Alpha x402", money(x402Revenue), "cobrado por llamadas en Base"],
-    ["📈 Capital Real en Cartera", money(sm.equity), `${pct(sm.returnPct)} retorno neto (${money(sm.realizedPnl)} P&L)`],
+    ["💰 P&L Confirmado DEX", money(realProfit), "operaciones registradas en BaseScan"],
+    ["⚡ Ingresos x402 Recibidos", money(x402Revenue), "USDC cobrado por llamadas de API en Base"],
+    ["📈 Cartera Cuantitativa", money(sm.equity), `${pct(sm.returnPct)} retorno modelo (${money(sm.realizedPnl)} P&L simulado)`],
     ["🎯 Señales de Convicción", `${activeSignalsCount}`, `${tr.proposals.filter((p) => p.status === "proposed").length} propuestas listas`]
   ];
   $("#trader-tiles").innerHTML = tiles.map(([l, v, s]) => `<div class="tile"><div class="label">${esc(l)}</div><div class="value">${esc(v)}</div><div class="sub">${esc(s)}</div></div>`).join("");
