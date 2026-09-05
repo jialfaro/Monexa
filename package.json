@@ -13,6 +13,7 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.100.0"
+    "@anthropic-ai/sdk": "^0.100.0",
+    "mongodb": "^7.6.0"
   }
 }

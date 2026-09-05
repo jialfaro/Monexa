@@ -24,6 +24,7 @@ import { assessSignal } from "./trading/risk.js";
 import { summarizeLedger } from "./ledger.js";
 import { TEMPLATES } from "./agents/templates.js";
 import { listAllSkills } from "./skills/index.js";
+import { connectMongoStore } from "./core/mongo.js";
 
 /** Ensambla el enjambre completo a partir de la configuración. */
 export function createSwarm({ rootDirectory, env = process.env, statePath } = {}) {
@@ -60,6 +61,9 @@ export function createSwarm({ rootDirectory, env = process.env, statePath } = {}
   });
 
   async function start() {
+    if (config.mongoUri) {
+      await connectMongoStore(store, config.mongoUri);
+    }
     registry.recoverStale();
     // Oportunidades y trabajos que quedaron a medias en un arranque anterior vuelven a revisión.
     for (const opp of store.list("opportunities", (o) => o.status === "assigned")) {

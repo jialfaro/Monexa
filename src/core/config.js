@@ -84,6 +84,7 @@ export function buildConfig(env = process.env) {
     tunnel: (env.TUNNEL || "none").toLowerCase(),
     ngrok: { domain: env.NGROK_DOMAIN || "", authtoken: env.NGROK_AUTHTOKEN || "" },
     cloudflare: { token: env.CLOUDFLARE_TUNNEL_TOKEN || "", url: env.CLOUDFLARE_TUNNEL_URL || "" },
+    mongoUri: env.MONGODB_URI || "",
     // Claves de modelo: se usa la del proveedor elegido en LLM_PROVIDER (o la primera disponible) y las demás como respaldo.
     anthropic: {
       apiKey: env.ANTHROPIC_API_KEY || "",
