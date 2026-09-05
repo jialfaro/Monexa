@@ -20,7 +20,8 @@ Reglas:
 - Usa write_file con el contenido COMPLETO del archivo. No inventes APIs ni archivos que no hayas leído.
 - Tan pronto apliques los cambios necesarios con write_file (y pruebas si aplica), NO sigas buscando ni leyendo más archivos: LLAMA INMEDIATAMENTE a la herramienta finish con resolvable=true para cerrar la tarea.
 - Si el issue requiere credenciales, hardware, ejecutar binarios, diseño de producto ambiguo o no es viable, NO malgastes iteraciones: llama de inmediato a finish con resolvable=false y explica por qué.
-- Termina siempre con finish. Sé preciso y honesto en el resumen.${buildSkillsPrompt("worker")}`;
+- Termina siempre con finish. Sé preciso y honesto en el resumen.
+- ALL Pull Request titles (`prTitle`), PR bodies (`prBody`), commit messages, and code summaries MUST be written in ENGLISH. Never write PR descriptions or titles in Spanish.${buildSkillsPrompt("worker")}`;
 
 export function createWorkerRunner({ store, llm, config, github, registry }) {
   async function runTool(name, input, repo, ref, changes, ctx) {
@@ -115,13 +116,13 @@ export function createWorkerRunner({ store, llm, config, github, registry }) {
     if (!finish) {
       if (changes.size > 0) {
         finish = {
-          summary: `Cambios aplicados en ${changes.size} archivo(s) tras alcanzar el límite de iteraciones.`,
+          summary: `Applied changes to ${changes.size} file(s) upon reaching iteration limit.`,
           prTitle: `Fix #${opp.number}: ${opp.title}`.slice(0, 120),
-          prBody: `Solución propuesta para #${opp.number}.\n\nArchivos modificados:\n${[...changes.keys()].map((p) => `- \`${p}\``).join("\n")}`,
+          prBody: `Proposed solution for #${opp.number}.\n\nModified files:\n${[...changes.keys()].map((p) => `- \`${p}\``).join("\n")}`,
           resolvable: true
         };
       } else {
-        finish = { summary: "Se agotaron las iteraciones sin cerrar la tarea.", resolvable: false };
+        finish = { summary: "Exhausted iterations without completing task.", resolvable: false };
       }
     }
     return { finish, changes: [...changes.entries()].map(([path, content]) => ({ path, content })), steps, baseBranch: info.defaultBranch };
@@ -135,8 +136,8 @@ export function createWorkerRunner({ store, llm, config, github, registry }) {
       branchName,
       changes: job.changes,
       title: job.prTitle || `Fix #${opp.number}: ${opp.title}`.slice(0, 120),
-      // Algora sólo atribuye la recompensa si el PR lleva "/claim #issue".
-      body: `${job.prBody || job.summary}\n\nCloses #${opp.number}${opp.verifiedPayer === "algora-pbc" ? `\n\n/claim #${opp.number}` : ""}\n\n_Enviado por un agente Monexa; revisión humana: ${job.reviewedBy ? "sí" : "no"}._`
+      // Algora only attributes rewards if the PR includes "/claim #issue".
+      body: `${job.prBody || job.summary}\n\nCloses #${opp.number}${opp.verifiedPayer === "algora-pbc" ? `\n\n/claim #${opp.number}` : ""}`
     });
     store.upsert("jobs", { id: job.id, status: "submitted", submittedAt: new Date().toISOString(), submission: pr, submittedBy: ctx.agent.id });
     store.upsert("opportunities", { id: opp.id, status: "submitted" });
