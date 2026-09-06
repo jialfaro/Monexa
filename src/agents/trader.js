@@ -7,15 +7,64 @@ import { getDexUrl, BASE_TOKENS } from "../trading/market.js";
  * market-scout → strategy-analyst (uno por estrategia) → risk-manager → dex-executor.
  * Operaciones con dinero real en DEX; en modo "real" / "proposal" las órdenes quedan como propuestas verificadas para Uniswap v3 / Aerodrome en Base con liquidación en ledger on-chain.
  */
-export function createTraderRunners({ store, config, market, book, registry }) {
+export function createTraderRunners({ store, config, market, book, registry, swapper }) {
   const t = config.trader;
   const sleep = (ms, signal) => new Promise((resolve) => {
     const timer = setTimeout(resolve, ms);
     signal.addEventListener("abort", () => { clearTimeout(timer); resolve(); }, { once: true });
   });
 
+  async function checkOnChainStops(prices, ctx) {
+    if (!swapper || !swapper.isConfigured()) return;
+    const openPositions = store.list("proposals", (p) => p.status === "open_onchain");
+    for (const pos of openPositions) {
+      const currentPrice = prices[pos.product];
+      if (!currentPrice) continue;
+
+      const isTakeProfit = currentPrice >= pos.targetPrice;
+      const isStopLoss = currentPrice <= pos.stopPrice;
+
+      if (isTakeProfit || isStopLoss) {
+        const exitReason = isTakeProfit ? "Take Profit (+6%) alcanzado" : "Stop Loss (-3%) ejecutado";
+        ctx.log(`[Auto-Trader] ${pos.product}: Ejecutando venta on-chain por ${exitReason} a $${currentPrice}`);
+        try {
+          const sellResult = await swapper.executeSell({
+            product: pos.product,
+            tokenAmount: pos.tokensHeld,
+            currentPrice
+          });
+          const pnl = Number((sellResult.estimatedUsdReceived - pos.sizeUsd).toFixed(2));
+          store.upsert("proposals", {
+            id: pos.id,
+            status: isTakeProfit ? "closed_take_profit" : "closed_stop_loss",
+            closeTxHash: sellResult.txHash,
+            closeBasescanUrl: sellResult.basescanUrl,
+            realizedProfitUsd: pnl,
+            resolvedAt: new Date().toISOString()
+          });
+
+          store.upsert("ledger", {
+            id: `dex_pnl_${Date.now()}_${pos.product}`,
+            agentId: "trader",
+            proposalId: pos.id,
+            kind: "claimed",
+            amount: pnl,
+            asset: "USDC",
+            note: `P&L On-Chain Uniswap v3 Base (${pos.product}): ${pnl >= 0 ? "+" : ""}$${pnl} USDC`,
+            at: new Date().toISOString()
+          });
+
+          ctx.log(`🟢 CIERRE ON-CHAIN EN BASE: ${exitReason} -> P&L ${pnl >= 0 ? "+" : ""}$${pnl} USDC · ${sellResult.basescanUrl}`);
+        } catch (err) {
+          ctx.log(`❌ Error al cerrar posición on-chain para ${pos.product}: ${err.message}`, { level: "error" });
+        }
+      }
+    }
+  }
+
   async function traderManager(ctx) {
-    ctx.log(`Trader iniciado en modo ${t.mode} · capital de trading ${t.tradingCapitalUsd || t.paperStartUsd} USD · ${t.watchlist.join(", ")} · velas ${t.granularity}s`);
+    const isAuto = t.executionMode === "auto" && swapper?.isConfigured();
+    ctx.log(`Trader iniciado en modo ${t.mode} (${isAuto ? "🟢 AUTO-EXECUTION ON-CHAIN UNISWAP V3" : "🟡 MODO ASISTIDO PROPOSAL"}) · capital ${t.tradingCapitalUsd || t.paperStartUsd} USD · ${t.watchlist.join(", ")}`);
     let ticks = 0;
     while (!ctx.signal.aborted) {
       ticks += 1;
@@ -34,11 +83,11 @@ export function createTraderRunners({ store, config, market, book, registry }) {
         const risk = await ctx.spawnChild({ template: "risk-manager", goal: `Ciclo ${ticks}: evaluar señales`, input: { tickId } });
         const riskReport = await ctx.waitFor(risk.id);
 
-        const executor = await ctx.spawnChild({ template: "paper-executor", goal: `Ciclo ${ticks}: ejecutar ${riskReport?.approved ?? 0} propuestas`, input: { tickId } });
+        const executor = await ctx.spawnChild({ template: "dex-executor", goal: `Ciclo ${ticks}: ejecutar ${riskReport?.approved ?? 0} propuestas`, input: { tickId } });
         const execReport = await ctx.waitFor(executor.id);
 
         const summary = book.summary();
-        ctx.log(`Ciclo ${ticks}: ${riskReport?.approved ?? 0} aprobadas, ${execReport?.executed ?? 0} ejecutadas, ${execReport?.stopped ?? 0} cierres por stop · equity ${summary.equity.toFixed(2)} USD (${(summary.returnPct * 100).toFixed(2)} %)`);
+        ctx.log(`Ciclo ${ticks}: ${riskReport?.approved ?? 0} aprobadas, ${execReport?.executed ?? 0} ejecutadas, ${execReport?.stopped ?? 0} cierres · equity ${summary.equity.toFixed(2)} USD`);
         registry.prune?.({ keep: 400 });
       } catch (error) {
         ctx.log(`Error en el ciclo ${ticks}: ${error.message}`, { level: "error" });
@@ -80,7 +129,6 @@ export function createTraderRunners({ store, config, market, book, registry }) {
     const prices = marketDoc?.prices ?? {};
     const signals = store.list("signals", (s) => s.tickId === ctx.input.tickId && s.status === "pending");
     let approved = 0;
-    // Con varias señales del mismo producto se conserva la más fuerte para evitar órdenes contradictorias.
     const byProduct = new Map();
     for (const signal of signals) {
       const current = byProduct.get(signal.product);
@@ -102,60 +150,96 @@ export function createTraderRunners({ store, config, market, book, registry }) {
     return { summary: `${approved} de ${signals.length} señales aprobadas`, approved };
   }
 
-  async function paperExecutor(ctx) {
+  async function dexExecutor(ctx) {
     const marketDoc = store.get("trading", "market");
     const prices = marketDoc?.prices ?? {};
+    
+    // 1. Revisar Take Profit y Stop Loss de posiciones on-chain
+    await checkOnChainStops(prices, ctx);
+
+    // 2. Revisar stops de la cartera simulada
     const stopped = book.checkStops(prices, ctx.agent.id);
-    for (const trade of stopped) ctx.log(`Cierre automático ${trade.product} a ${trade.price} (${trade.reason}) → P&L ${trade.pnl.toFixed(2)} USD`);
+    for (const trade of stopped) ctx.log(`Cierre automático simulado ${trade.product} a ${trade.price} (${trade.reason}) → P&L ${trade.pnl.toFixed(2)} USD`);
+
     let executed = 0;
-    for (const signal of store.list("signals", (s) => s.tickId === ctx.input.tickId && s.status === "approved")) {
+    const approvedSignals = store.list("signals", (s) => s.tickId === ctx.input.tickId && s.status === "approved");
+
+    for (const signal of approvedSignals) {
       const price = prices[signal.product];
+      const targetPrice = signal.action === "buy" ? price * (1 + t.takeProfitPct) : price * (1 - t.takeProfitPct);
+      const stopPrice = signal.action === "buy" ? price * (1 - t.stopLossPct) : price * (1 + t.stopLossPct);
+      const potentialGainUsd = Number((signal.sizeUsd * t.takeProfitPct).toFixed(2));
+      const potentialLossUsd = Number((signal.sizeUsd * t.stopLossPct).toFixed(2));
+      const dexUrl = getDexUrl(signal.product);
+      const tokenInfo = BASE_TOKENS[signal.product] || null;
+
+      const isAuto = t.executionMode === "auto" && swapper?.isConfigured();
+      let onchainResult = null;
+
+      // Intentar ejecución automática on-chain si está configurada
+      if (isAuto && signal.action === "buy" && tokenInfo?.address) {
+        try {
+          ctx.log(`[Auto-Trader] Ejecutando orden on-chain automática para ${signal.product} en Base Uniswap v3...`);
+          onchainResult = await swapper.executeBuy({
+            product: signal.product,
+            usdAmount: Math.min(signal.sizeUsd, t.maxOrderUsd || 15),
+            currentPrice: price
+          });
+          ctx.log(`🟢 COMPRA ON-CHAIN EXITOSA: ${onchainResult.basescanUrl}`);
+        } catch (swErr) {
+          ctx.log(`🟡 Fallo swap on-chain (${swErr.message}) -> guardando como propuesta manual`, { level: "warn" });
+        }
+      }
+
+      // Actualizar libro y registro
       try {
         if (signal.action === "buy") book.open({ product: signal.product, usd: signal.sizeUsd, price, strategyId: signal.strategyId, reason: signal.reason, agentId: ctx.agent.id });
         else book.close({ product: signal.product, price, reason: signal.reason, agentId: ctx.agent.id });
         executed += 1;
-        store.upsert("signals", { id: signal.id, status: "executed_real", executedAt: new Date().toISOString(), executedPrice: price });
-        ctx.log(`Operación DEX: ${signal.action.toUpperCase()} ${signal.product} ${signal.sizeUsd.toFixed(2)} USD a ${price}`);
-        if (t.mode === "proposal" || t.mode === "paper" || t.mode === "real") {
-          const targetPrice = signal.action === "buy" ? price * (1 + t.takeProfitPct) : price * (1 - t.takeProfitPct);
-          const stopPrice = signal.action === "buy" ? price * (1 - t.stopLossPct) : price * (1 + t.stopLossPct);
-          const potentialGainUsd = Number((signal.sizeUsd * t.takeProfitPct).toFixed(2));
-          const potentialLossUsd = Number((signal.sizeUsd * t.stopLossPct).toFixed(2));
-          const dexUrl = getDexUrl(signal.product);
-          const tokenInfo = BASE_TOKENS[signal.product] || null;
+        store.upsert("signals", { id: signal.id, status: onchainResult ? "executed_real_onchain" : "executed_real", executedAt: new Date().toISOString(), executedPrice: price });
 
-          store.upsert("proposals", {
-            signalId: signal.id,
-            product: signal.product,
-            action: signal.action,
-            sizeUsd: signal.sizeUsd,
-            price,
-            targetPrice: Number(targetPrice.toFixed(targetPrice < 1 ? 4 : 2)),
-            stopPrice: Number(stopPrice.toFixed(stopPrice < 1 ? 4 : 2)),
-            targetPct: Number((t.takeProfitPct * 100).toFixed(1)),
-            stopPct: Number((t.stopLossPct * 100).toFixed(1)),
-            potentialGainUsd,
-            potentialLossUsd,
-            riskReward: `${(t.takeProfitPct / t.stopLossPct).toFixed(1)}:1`,
-            strategyLabel: signal.strategyLabel,
-            reason: signal.reason,
-            dexUrl,
-            network: tokenInfo?.network || "Base (EIP-155:8453)",
-            dexName: tokenInfo?.dexName || "Uniswap v3 (Base)",
-            tokenAddress: tokenInfo?.address || null,
-            status: "proposed",
-            at: new Date().toISOString()
-          });
-          ctx.log(`Propuesta DEX para ejecución: ${signal.action.toUpperCase()} ${signal.product} ${signal.sizeUsd.toFixed(2)} USD (TP +$${potentialGainUsd} / SL -$${potentialLossUsd})`);
-        }
+        store.upsert("proposals", {
+          signalId: signal.id,
+          product: signal.product,
+          action: signal.action,
+          sizeUsd: onchainResult ? onchainResult.amountInUsd : signal.sizeUsd,
+          price,
+          targetPrice: Number(targetPrice.toFixed(targetPrice < 1 ? 4 : 2)),
+          stopPrice: Number(stopPrice.toFixed(stopPrice < 1 ? 4 : 2)),
+          targetPct: Number((t.takeProfitPct * 100).toFixed(1)),
+          stopPct: Number((t.stopLossPct * 100).toFixed(1)),
+          potentialGainUsd,
+          potentialLossUsd,
+          riskReward: `${(t.takeProfitPct / t.stopLossPct).toFixed(1)}:1`,
+          strategyLabel: signal.strategyLabel,
+          reason: signal.reason,
+          dexUrl,
+          network: tokenInfo?.network || "Base (EIP-155:8453)",
+          dexName: tokenInfo?.dexName || "Uniswap v3 (Base)",
+          tokenAddress: tokenInfo?.address || null,
+          status: onchainResult ? "open_onchain" : "proposed",
+          txHash: onchainResult?.txHash || null,
+          basescanUrl: onchainResult?.basescanUrl || null,
+          tokensHeld: onchainResult?.estimatedTokens || null,
+          at: new Date().toISOString()
+        });
+
       } catch (error) {
         store.upsert("signals", { id: signal.id, status: "failed", riskReason: error.message });
         ctx.log(`No ejecutada ${signal.product}: ${error.message}`, { level: "warn" });
       }
     }
     book.markToMarket(prices);
-    return { summary: `${executed} órdenes ejecutadas en DEX, ${stopped.length} cierres por stop`, executed, stopped: stopped.length };
+    return { summary: `${executed} órdenes procesadas en DEX, ${stopped.length} cierres por stop`, executed, stopped: stopped.length };
   }
 
-  return { trader: traderManager, "market-scout": marketScout, "strategy-analyst": strategyAnalyst, "risk-manager": riskManager, "paper-executor": paperExecutor, "trade-executor": paperExecutor };
+  return {
+    trader: traderManager,
+    "market-scout": marketScout,
+    "strategy-analyst": strategyAnalyst,
+    "risk-manager": riskManager,
+    "dex-executor": dexExecutor,
+    "paper-executor": dexExecutor,
+    "trade-executor": dexExecutor
+  };
 }

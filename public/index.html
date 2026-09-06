@@ -172,25 +172,53 @@
           </div>
         </div>
 
-        <!-- On-Chain Wallet Status Bar -->
-        <div class="trader-wallet-bar" id="trader-wallet-bar" style="margin-bottom: 12px; padding: 10px 14px; background: rgba(0, 240, 255, 0.06); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 18px;">💎</span>
-            <div>
-              <div style="font-size: 10.5px; color: var(--ink-3); text-transform: uppercase; font-family: var(--font-mono);">Billetera de Liquidación (Base Mainnet)</div>
-              <div style="font-family: var(--font-mono); font-size: 12.5px; font-weight: 700; color: #fff;" id="trader-wallet-addr">0x99b0d41242848a6d16cf778028460a2a5421328d</div>
+        <!-- Hot Wallet Control Center & Auto-Trading Execution Bar -->
+        <div class="hot-wallet-card" id="hot-wallet-card">
+          <div class="hot-wallet-top">
+            <div class="hot-wallet-identity">
+              <div class="hot-wallet-icon">🤖</div>
+              <div>
+                <div class="hot-wallet-title">Hot Wallet de Ejecución Autónoma · Uniswap v3 Base</div>
+                <div class="hot-wallet-addr-row">
+                  <span class="hot-wallet-address" id="trader-wallet-addr">0x99b0d41242848a6d16cf778028460a2a5421328d</span>
+                  <a id="trader-wallet-basescan" href="https://basescan.org" target="_blank" rel="noopener noreferrer" style="font-size: 11px; color: var(--cyan); text-decoration: underline;">BaseScan ↗</a>
+                  <button class="secondary" id="btn-copy-trader-addr" style="font-size: 10px; padding: 2px 6px;">Copiar</button>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <span class="pill" id="trader-exec-mode-pill">Modo: Auto</span>
+              <button class="secondary" id="btn-toggle-trader-mode" data-trader-toggle-mode="1" style="font-size: 11px; padding: 4px 10px;">Cambiar a Manual</button>
+              <button class="secondary glow-btn" id="btn-test-buy-aero" data-trader-test-buy="AERO-USD" style="font-size: 11px; padding: 4px 10px; border-color: #00ff9d; color: #00ff9d;">⚡ Swap Test $2 AERO</button>
             </div>
           </div>
-          <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
-            <div>
-              <div style="font-size: 10.5px; color: var(--ink-3);">Saldo USDC Real</div>
-              <div style="font-family: var(--font-mono); font-size: 13.5px; font-weight: 700; color: #00ff9d;" id="trader-onchain-usdc">— USDC</div>
+
+          <div class="hot-wallet-stats">
+            <div class="hot-wallet-stat-box">
+              <div class="hot-wallet-stat-lbl">💵 Capital Disponible (USDC Base)</div>
+              <div class="hot-wallet-stat-val" style="color: #00ff9d;" id="trader-onchain-usdc">— USDC</div>
             </div>
-            <div>
-              <div style="font-size: 10.5px; color: var(--ink-3);">Saldo ETH Real</div>
-              <div style="font-family: var(--font-mono); font-size: 13.5px; font-weight: 700; color: var(--cyan);" id="trader-onchain-eth">— ETH</div>
+            <div class="hot-wallet-stat-box">
+              <div class="hot-wallet-stat-lbl">⛽ Combustible de Red (ETH Gas)</div>
+              <div class="hot-wallet-stat-val" style="color: var(--cyan);" id="trader-onchain-eth">— ETH</div>
             </div>
-            <button class="secondary" id="btn-trader-connect-web3" data-trader-connect-wallet="1" style="font-size: 11px; padding: 5px 10px;">🦊 Conectar MetaMask</button>
+            <div class="hot-wallet-stat-box">
+              <div class="hot-wallet-stat-lbl">🛡️ Límite por Operación (Max Order)</div>
+              <div class="hot-wallet-stat-val" style="color: #fff;" id="trader-max-order">$15.00 USD</div>
+            </div>
+            <div class="hot-wallet-stat-box">
+              <div class="hot-wallet-stat-lbl">🎯 TP / SL Automático</div>
+              <div class="hot-wallet-stat-val" style="color: var(--amber);" id="trader-tp-sl">+6.0% / -3.0%</div>
+            </div>
+          </div>
+
+          <div class="hot-wallet-status-bar">
+            <span id="trader-wallet-status-text">⏳ Consultando estado on-chain...</span>
+            <span class="muted" style="font-size: 11px;" id="trader-wallet-checked-at"></span>
+          </div>
+
+          <div class="hot-wallet-instructions" id="trader-wallet-instructions">
+            💡 <strong>Activación On-Chain:</strong> Tu agente ejecuta swaps reales autónomos (USDC ↔ Tokens) en Base cuando detecta señales cuantitativas. Para activar, agrega tu clave en <code>TRADER_PRIVATE_KEY</code> en <code>.env</code> y transfiere <strong>$10–$20 USDC</strong> + <strong>$2 ETH</strong> en red Base a la dirección de tu bot.
           </div>
         </div>
 

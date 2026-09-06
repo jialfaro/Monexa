@@ -151,6 +151,12 @@ export function buildConfig(env = process.env) {
     trader: {
       enabled: bool(env.TRADER_ENABLED, true),
       mode: "real",
+      executionMode: (env.TRADER_EXECUTION_MODE || "auto").toLowerCase(), // "auto" (opera on-chain si hay clave) o "manual"
+      privateKey: env.TRADER_PRIVATE_KEY || env.EVM_PRIVATE_KEY || "",
+      rpcUrl: env.BASE_RPC_URL || env.RPC_URL || "https://mainnet.base.org",
+      maxOrderUsd: num(env.TRADER_MAX_ORDER_USD, 15),
+      slippageTolerancePct: num(env.TRADER_SLIPPAGE_PCT, 0.015),
+      minEthGas: num(env.TRADER_MIN_ETH_GAS, 0.0003),
       tradingCapitalUsd: num(env.TRADING_CAPITAL_USD || env.PAPER_START_USD, 1000),
       paperStartUsd: num(env.TRADING_CAPITAL_USD || env.PAPER_START_USD, 1000),
       watchlist: (env.TRADER_WATCHLIST || "BTC-USD,ETH-USD,SOL-USD,AERO-USD,VIRTUAL-USD").split(",").map((p) => p.trim().toUpperCase()).filter(Boolean),
@@ -163,7 +169,7 @@ export function buildConfig(env = process.env) {
       takeProfitPct: num(env.TRADER_TAKE_PROFIT_PCT, 0.06),
       dailyLossLimitPct: num(env.TRADER_DAILY_LOSS_LIMIT_PCT, 0.05),
       minStrength: num(env.TRADER_MIN_STRENGTH, 0.55),
-      minOrderUsd: num(env.TRADER_MIN_ORDER_USD, 10)
+      minOrderUsd: num(env.TRADER_MIN_ORDER_USD, 5)
     }
   };
 }

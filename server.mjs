@@ -137,6 +137,55 @@ async function handleApi(request, response, url) {
     store.audit({ type: "human_resolved_trade_proposal", proposalId: action, status, profitUsd });
     return json(response, 200, store.get("proposals", action));
   }
+  if (method === "GET" && resource === "trader" && id === "wallet") {
+    try {
+      const balances = await swarm.swapper.getWalletBalances();
+      return json(response, 200, {
+        ok: true,
+        ...balances,
+        executionMode: config.trader.executionMode,
+        maxOrderUsd: config.trader.maxOrderUsd,
+        slippageTolerancePct: config.trader.slippageTolerancePct,
+        minEthGas: config.trader.minEthGas
+      });
+    } catch (error) {
+      return json(response, 500, { ok: false, error: error.message });
+    }
+  }
+  if (method === "POST" && resource === "trader" && id === "mode") {
+    const body = await readBody(request).catch(() => ({}));
+    const newMode = body.mode === "manual" ? "manual" : "auto";
+    config.trader.executionMode = newMode;
+    store.audit({ type: "trader_mode_changed", executionMode: newMode });
+    return json(response, 200, {
+      ok: true,
+      executionMode: newMode,
+      statusText: newMode === "auto" ? "Modo automático activado (swaps on-chain autónomos)" : "Modo manual activado (solo propuestas y enlaces a Uniswap)"
+    });
+  }
+  if (method === "POST" && resource === "trader" && id === "buy-now") {
+    const body = await readBody(request).catch(() => ({}));
+    const product = body.product || "AERO-USD";
+    const amountUsd = Number(body.amountUsd) || 2;
+    try {
+      const price = (store.get("trading", "market")?.prices?.[product]) || 1;
+      const result = await swarm.swapper.executeBuy({ product, usdAmount: amountUsd, currentPrice: price });
+      store.upsert("trades", {
+        kind: "real_onchain_buy",
+        side: "buy",
+        product,
+        price,
+        usd: amountUsd,
+        txHash: result.txHash,
+        basescanUrl: result.basescanUrl,
+        at: new Date().toISOString(),
+        reason: "Compra manual directa on-chain desde Hot Wallet"
+      });
+      return json(response, 200, result);
+    } catch (error) {
+      return json(response, 500, { ok: false, error: error.message });
+    }
+  }
   if (method === "GET" && resource === "trader" && id === "onchain") {
     try {
       const address = config.x402.payTo;

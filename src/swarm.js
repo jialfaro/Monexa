@@ -17,6 +17,7 @@ import { createSellerService, createSellerRunner } from "./agents/seller.js";
 import { createReconcilerRunner } from "./agents/reconciler.js";
 import { createManagerRunner } from "./agents/manager.js";
 import { createTraderRunners } from "./agents/trader.js";
+import { createOnChainSwapper } from "./trading/swapper.js";
 import { createMarket, getDexUrl, BASE_TOKENS } from "./trading/market.js";
 import { createPaperBook } from "./trading/paper.js";
 import { STRATEGIES } from "./trading/strategies.js";
@@ -46,6 +47,7 @@ export function createSwarm({ rootDirectory, env = process.env, statePath } = {}
 
   const market = createMarket({ fetchJson: fetcher.fetchJson });
   const book = createPaperBook({ store, config });
+  const swapper = createOnChainSwapper(config.trader);
   const runners = {};
   const registry = createRegistry({ store, config, runners });
   const sellerService = createSellerService({ store, llm, config, facilitator, registry });
@@ -57,7 +59,7 @@ export function createSwarm({ rootDirectory, env = process.env, statePath } = {}
     reviewer: createReviewerRunner({ store, llm }),
     seller: createSellerRunner({ store, config, llm, sellerService }),
     reconciler: createReconcilerRunner({ store, config, evm }),
-    ...createTraderRunners({ store, config, market, book, registry })
+    ...createTraderRunners({ store, config, market, book, registry, swapper })
   });
 
   async function start() {
@@ -144,6 +146,11 @@ export function createSwarm({ rootDirectory, env = process.env, statePath } = {}
       trader: {
         enabled: config.trader.enabled,
         mode: config.trader.mode,
+        executionMode: config.trader.executionMode,
+        wallet: swapper.getLastBalances(),
+        maxOrderUsd: config.trader.maxOrderUsd,
+        slippageTolerancePct: config.trader.slippageTolerancePct,
+        minEthGas: config.trader.minEthGas,
         watchlist: config.trader.watchlist,
         limits: { maxPositionPct: config.trader.maxPositionPct, maxExposurePct: config.trader.maxExposurePct, stopLossPct: config.trader.stopLossPct, takeProfitPct: config.trader.takeProfitPct, dailyLossLimitPct: config.trader.dailyLossLimitPct, feeRate: config.trader.feeRate, tickMinutes: config.trader.tickMs / 60_000 },
         strategies: STRATEGIES.map((x) => ({ id: x.id, label: x.label, description: x.description })),
@@ -252,7 +259,7 @@ export function createSwarm({ rootDirectory, env = process.env, statePath } = {}
     };
   }
 
-  return { config, store, llm, registry, sellerService, sources, start, snapshot, github, book, market, triggerTraderScan, evm };
+  return { config, store, llm, registry, sellerService, sources, start, snapshot, github, book, market, triggerTraderScan, evm, swapper };
 }
 
 function countBy(list, key) {

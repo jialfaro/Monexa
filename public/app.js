@@ -370,14 +370,55 @@ let userWeb3Address = null;
 
 async function updateOnChainBalance() {
   try {
-    const res = await api("/api/trader/onchain", {});
+    const res = await api("/api/trader/wallet", {});
     if (res.ok) {
       const usdcEl = $("#trader-onchain-usdc");
       const ethEl = $("#trader-onchain-eth");
       const addrEl = $("#trader-wallet-addr");
-      if (usdcEl) usdcEl.textContent = `${Number(res.usdcBalance).toFixed(2)} USDC`;
-      if (ethEl) ethEl.textContent = `${Number(res.ethBalance).toFixed(4)} ETH`;
-      if (addrEl) addrEl.textContent = res.address;
+      const basescanEl = $("#trader-wallet-basescan");
+      const modePill = $("#trader-exec-mode-pill");
+      const toggleBtn = $("#btn-toggle-trader-mode");
+      const statusText = $("#trader-wallet-status-text");
+      const checkedAt = $("#trader-wallet-checked-at");
+      const maxOrderEl = $("#trader-max-order");
+
+      if (usdcEl) usdcEl.textContent = `${Number(res.usdcBalance ?? 0).toFixed(2)} USDC`;
+      if (ethEl) ethEl.textContent = `${Number(res.ethBalance ?? 0).toFixed(4)} ETH`;
+      if (addrEl && res.address) addrEl.textContent = res.address;
+      if (basescanEl && res.address) basescanEl.href = `https://basescan.org/address/${res.address}`;
+      if (maxOrderEl) maxOrderEl.textContent = `$${res.maxOrderUsd || 15}.00 USD`;
+
+      if (modePill) {
+        if (res.executionMode === "auto") {
+          modePill.className = "pill good";
+          modePill.textContent = "⚡ Auto-Swaps On-Chain (Base)";
+        } else {
+          modePill.className = "pill info";
+          modePill.textContent = "Modo Manual / Propuestas";
+        }
+      }
+
+      if (toggleBtn) {
+        toggleBtn.textContent = res.executionMode === "auto" ? "Pausar a Manual" : "Activar Auto-Swaps";
+        toggleBtn.dataset.currentMode = res.executionMode || "auto";
+      }
+
+      if (statusText) {
+        statusText.textContent = res.statusText || (res.canTrade ? "🟢 Hot Wallet lista para operar on-chain" : "🟡 Falta fondear saldo en Base");
+      }
+      if (checkedAt && res.checkedAt) {
+        checkedAt.textContent = `Actualizado: ${when(res.checkedAt)}`;
+      }
+    } else {
+      const oldRes = await api("/api/trader/onchain", {});
+      if (oldRes.ok) {
+        const usdcEl = $("#trader-onchain-usdc");
+        const ethEl = $("#trader-onchain-eth");
+        const addrEl = $("#trader-wallet-addr");
+        if (usdcEl) usdcEl.textContent = `${Number(oldRes.usdcBalance).toFixed(2)} USDC`;
+        if (ethEl) ethEl.textContent = `${Number(oldRes.ethBalance).toFixed(4)} ETH`;
+        if (addrEl) addrEl.textContent = oldRes.address;
+      }
     }
   } catch {}
 }
@@ -737,6 +778,62 @@ document.addEventListener("click", async (event) => {
           duration: 5000
         });
         await refresh();
+      }
+      return;
+    }
+    else if (t.dataset.traderToggleMode) {
+      const current = t.dataset.currentMode || "auto";
+      const nextMode = current === "auto" ? "manual" : "auto";
+      const promptText = nextMode === "auto" 
+        ? "¿Activar el modo automático? El agente ejecutará swaps reales autónomos en Uniswap v3 Base cuando detecte señales aprobadas."
+        : "¿Cambiar a modo manual? El agente dejará de ejecutar swaps automáticamente y solo generará propuestas.";
+      const ok = await cyberConfirm(promptText, "Modo de Ejecución On-Chain");
+      if (ok) {
+        const res = await api("/api/trader/mode", { mode: nextMode });
+        cyberNotify(res.statusText, { type: "info", title: "Modo Actualizado" });
+        await updateOnChainBalance();
+        await refresh();
+      }
+      return;
+    }
+    else if (t.dataset.traderTestBuy) {
+      const product = t.dataset.traderTestBuy || "AERO-USD";
+      const ok = await cyberConfirm(`¿Ejecutar un Swap real de prueba por $2.00 USD de ${product} entregando USDC en Uniswap v3 Base desde tu Hot Wallet?`, "Swap de Prueba On-Chain");
+      if (ok) {
+        t.disabled = true;
+        const originalText = t.textContent;
+        t.textContent = "⏳ Ejecutando Swap On-Chain...";
+        cyberNotify(`Enviando transacción a Uniswap v3 Base...`, { type: "info", duration: 4000 });
+        try {
+          const res = await api("/api/trader/buy-now", { product, amountUsd: 2 });
+          if (res.ok) {
+            cyberNotify(`¡Swap exitoso en bloque ${res.blockNumber}! Tx: ${res.txHash.slice(0, 10)}...`, {
+              type: "success",
+              title: "Swap On-Chain Confirmado",
+              duration: 6000
+            });
+            await updateOnChainBalance();
+            await refresh();
+          } else {
+            cyberNotify(res.error || "No se pudo completar el swap", { type: "error", title: "Error en Swap" });
+          }
+        } catch (err) {
+          cyberNotify(err.message, { type: "error", title: "Fallo en Transacción" });
+        } finally {
+          t.disabled = false;
+          t.textContent = originalText;
+        }
+      }
+      return;
+    }
+    else if (t.id === "btn-copy-trader-addr") {
+      const addr = $("#trader-wallet-addr")?.textContent;
+      if (addr) {
+        await navigator.clipboard.writeText(addr);
+        const orig = t.textContent;
+        t.textContent = "✓ ¡Copiado!";
+        setTimeout(() => { t.textContent = orig; }, 2000);
+        cyberNotify(`Dirección de Hot Wallet copiada: ${addr}`, { type: "info" });
       }
       return;
     }
