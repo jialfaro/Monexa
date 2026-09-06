@@ -1,0 +1,16 @@
+name: Auto Deploy to Render
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deploy Hook
+        run: |
+          echo "Disparando despliegue automático en Render..."
+          RESPONSE=$(curl -s -X POST "https://api.render.com/deploy/srv-dae8eg67bikc738f10fg?key=oG6A_xriPjc")
+          echo "Respuesta de Render: $RESPONSE"
