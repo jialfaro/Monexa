@@ -76,10 +76,10 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
-      - key: ANTHROPIC_API_KEY
-        sync: false
       - key: TRADER_PRIVATE_KEY
         sync: false
+      - key: MONGODB_URI
+        value: "mongodb+srv://jaimeyt5678_db_user:dzr8Htje03jLCvEf@monexa.ecknofm.mongodb.net/?appName=Monexa"
       - key: MONGO_URI
-        sync: false
+        value: "mongodb+srv://jaimeyt5678_db_user:dzr8Htje03jLCvEf@monexa.ecknofm.mongodb.net/?appName=Monexa"
 

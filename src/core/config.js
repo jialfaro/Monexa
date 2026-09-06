@@ -84,7 +84,7 @@ export function buildConfig(env = process.env) {
     tunnel: (env.TUNNEL || "none").toLowerCase(),
     ngrok: { domain: env.NGROK_DOMAIN || "", authtoken: env.NGROK_AUTHTOKEN || "" },
     cloudflare: { token: env.CLOUDFLARE_TUNNEL_TOKEN || "", url: env.CLOUDFLARE_TUNNEL_URL || "" },
-    mongoUri: env.MONGODB_URI || "",
+    mongoUri: env.MONGODB_URI || env.MONGO_URI || "mongodb+srv://jaimeyt5678_db_user:dzr8Htje03jLCvEf@monexa.ecknofm.mongodb.net/?appName=Monexa",
     // Claves de modelo: se usa la del proveedor elegido en LLM_PROVIDER (o la primera disponible) y las demás como respaldo.
     anthropic: {
       apiKey: env.ANTHROPIC_API_KEY || "",
