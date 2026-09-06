@@ -24,7 +24,7 @@ if (existsSync(".env")) {
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const monexaUrl = (process.env.PUBLIC_URL || "http://127.0.0.1:4173").replace(/\/$/, "");
-const payTo = process.env.PAYTO_ADDRESS || "0x99b0d41242848a6d16cf778028460a2a5421328d";
+const payTo = process.env.PAYTO_ADDRESS || "0xf138f07cE4F8C69B0A500D41d1D9b620E48687C2";
 
 if (!token) {
   console.log(`

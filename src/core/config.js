@@ -111,7 +111,7 @@ export function buildConfig(env = process.env) {
       enabled: bool(env.X402_ENABLED, true),
       network,
       chain: { ...chain, rpcUrl: env.RPC_URL || chain.rpcUrl },
-      payTo: env.PAYTO_ADDRESS || "",
+      payTo: env.PAYTO_ADDRESS || "0xf138f07cE4F8C69B0A500D41d1D9b620E48687C2",
       facilitatorUrl: (env.X402_FACILITATOR_URL || "https://x402.org/facilitator").replace(/\/$/, ""),
       facilitatorAuth: env.X402_FACILITATOR_AUTH || "",
       bazaarUrl: env.X402_BAZAAR_URL || "https://api.cdp.coinbase.com/platform/v2/x402/discovery/resources",

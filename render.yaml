@@ -69,7 +69,7 @@ services:
       - key: BLOCKED_REPOS
         value: "SecureBananaLabs/bug-bounty,NSPG13/agent-bounties,zhangjiayang6835-cyber/bounty-plaza,tine1117/oss-hunter-livefire,xevrion-v2/agent-playground,UnsafeLabs/Bounty-Hunters"
       - key: PAYTO_ADDRESS
-        value: "0x99b0d41242848a6d16cf778028460a2a5421328d"
+        value: "0xf138f07cE4F8C69B0A500D41d1D9b620E48687C2"
       - key: OPENAI_API_KEY
         sync: false
       - key: GITHUB_TOKEN
