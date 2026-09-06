@@ -49,8 +49,11 @@ export function createOnChainSwapper({
     console.error("[Swapper] Error inicializando JsonRpcProvider:", err.message);
   }
 
-  const cleanKey = (privateKey || "").trim();
-  if (cleanKey && cleanKey.startsWith("0x") && cleanKey.length === 66 && provider) {
+  let cleanKey = (privateKey || "").trim();
+  if (cleanKey && !cleanKey.startsWith("0x")) {
+    cleanKey = `0x${cleanKey}`;
+  }
+  if (cleanKey && cleanKey.length === 66 && provider) {
     try {
       wallet = new ethers.Wallet(cleanKey, provider);
       console.log(`[Swapper] Hot Wallet lista en Base: ${wallet.address}`);
