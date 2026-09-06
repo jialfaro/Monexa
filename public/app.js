@@ -141,14 +141,29 @@ function renderSkills() {
   }).join("");
 }
 
+let currentBountyTab = "submitted"; // 'submitted' | 'active' | 'qualified' | 'all'
+let currentOppChip = "all"; // 'all' | 'bounty' | 'reward' | 'qualified' | 'submitted' | 'needs_review' | 'rejected'
+
 function renderBountiesInFlight() {
   const table = $("#bounties-table tbody");
   if (!table) return;
-  const submissions = (snapshot.jobs || []).filter((j) => j.status === "submitted" || j.submission);
-  if (!submissions.length) {
-    table.innerHTML = "<tr><td colspan=\"6\" class=\"muted\">No hay Pull Requests pendientes en este momento.</td></tr>";
-    return;
-  }
+
+  const allBounties = (snapshot.opportunities || []).filter((o) => o.kind === "bounty");
+  const submittedJobs = (snapshot.jobs || []).filter((j) => j.status === "submitted" || j.submission);
+  const activeJobs = (snapshot.jobs || []).filter((j) => ["in_progress", "submitting", "ready_for_review"].includes(j.status));
+  const qualifiedOpps = (snapshot.opportunities || []).filter((o) => ["qualified", "assigned"].includes(o.status) && o.kind === "bounty");
+
+  // Update tab counts
+  const btnSub = $("#bounty-tab-submitted-count"); if (btnSub) btnSub.textContent = submittedJobs.length;
+  const btnAct = $("#bounty-tab-active-count"); if (btnAct) btnAct.textContent = activeJobs.length;
+  const btnQual = $("#bounty-tab-qualified-count"); if (btnQual) btnQual.textContent = qualifiedOpps.length;
+  const btnAll = $("#bounty-tab-all-count"); if (btnAll) btnAll.textContent = allBounties.length;
+
+  // Highlight active tab button
+  document.querySelectorAll("#bounties-tabs button").forEach((btn) => {
+    const tab = btn.getAttribute("data-bounty-tab");
+    btn.className = tab === currentBountyTab ? "primary" : "secondary";
+  });
 
   // Metadata mappings to enrich each repository with authentic engineering context
   const REPO_META = {
@@ -260,9 +275,25 @@ function renderBountiesInFlight() {
   let escrowUsd = 0;
   let poolUsd = 0;
 
-  table.innerHTML = submissions.map((j) => {
-    const opp = snapshot.opportunities.find((o) => o.id === j.opportunityId) || {};
-    const rawRepo = opp.repo || j.submission?.branch?.split(":")[0] || "GitHub";
+  let items = [];
+  if (currentBountyTab === "submitted") {
+    items = submittedJobs;
+  } else if (currentBountyTab === "active") {
+    items = activeJobs;
+  } else if (currentBountyTab === "qualified") {
+    items = qualifiedOpps;
+  } else {
+    items = allBounties;
+  }
+
+  table.innerHTML = items.length === 0 
+    ? `<tr><td colspan="6" class="muted" style="text-align: center; padding: 24px;">No hay bounties en la categoría seleccionada.</td></tr>`
+    : items.map((item) => {
+    const isJob = Boolean(item.agentId || item.steps || item.submission || item.opportunityId);
+    const opp = isJob ? ((snapshot.opportunities || []).find((o) => o.id === item.opportunityId) || {}) : item;
+    const relatedJob = isJob ? item : ((snapshot.jobs || []).find((j) => j.opportunityId === opp.id) || null);
+
+    const rawRepo = opp.repo || relatedJob?.submission?.branch?.split(":")[0] || (opp.url ? opp.url.split("github.com/")[1]?.split("/issues")[0]?.split("/pull")[0] : "") || "GitHub";
     
     // Find matching meta by matching repo name keywords
     const metaKey = Object.keys(REPO_META).find((k) => rawRepo.toLowerCase().includes(k.toLowerCase())) || "";
@@ -277,8 +308,8 @@ function renderBountiesInFlight() {
       defaultReward: 50
     };
 
-    let prUrl = meta.prUrl || j.submission?.url || j.prUrl;
-    let prNum = meta.prNum ? `#${meta.prNum}` : (j.submission?.number ? `#${j.submission.number}` : "PR");
+    let prUrl = meta.prUrl || relatedJob?.submission?.url || relatedJob?.prUrl || null;
+    let prNum = meta.prNum ? `#${meta.prNum}` : (relatedJob?.submission?.number ? `#${relatedJob.submission.number}` : (prUrl ? "PR" : null));
 
     // Guard Caelestia PR if pointing to closed #633
     if (rawRepo.includes("caelestia-dots-kde") || (prUrl && prUrl.includes("/633"))) {
@@ -287,16 +318,16 @@ function renderBountiesInFlight() {
     }
 
     // Clean realistic titles for normalized tasks
-    let title = j.title;
+    let title = relatedJob?.title || opp.title || "Tarea de desarrollo";
     if (prUrl && prUrl.includes("12351")) {
       title = "Procedural Pixel Asset Engine & Vector Integration";
     } else if (prUrl && prUrl.includes("12352")) {
       title = "Technical Benchmark Spec & Creative Verification Suite";
     }
 
-    let amount = Number(j.expectedReward?.amount ?? opp.expectedReward?.amount ?? meta.defaultReward);
-    if (amount <= 0) amount = meta.defaultReward;
-    const asset = j.expectedReward?.asset ?? opp.expectedReward?.asset ?? "USD";
+    let amount = Number(relatedJob?.expectedReward?.amount ?? opp.expectedReward?.amount ?? meta.defaultReward);
+    if (amount <= 0) amount = meta.defaultReward || 50;
+    const asset = relatedJob?.expectedReward?.asset ?? opp.expectedReward?.asset ?? "USD";
     const isEscrow = meta.escrow;
 
     totalUsd += amount;
@@ -310,6 +341,42 @@ function renderBountiesInFlight() {
 
     const repoShort = rawRepo.split("/").length > 1 ? rawRepo : `org/${rawRepo}`;
 
+    const currentStatus = relatedJob ? relatedJob.status : opp.status;
+    let reviewBadge = `<span class="pill ${meta.reviewPill}">${esc(meta.review)}</span>`;
+    if (!prUrl) {
+      if (currentStatus === "in_progress") {
+        reviewBadge = `<span class="pill warn">🔨 En Desarrollo</span>`;
+      } else if (currentStatus === "ready_for_review") {
+        reviewBadge = `<span class="pill info">👀 Listo para PR</span>`;
+      } else if (currentStatus === "qualified") {
+        reviewBadge = `<span class="pill good">🔵 Calificado · En Cola</span>`;
+      } else if (currentStatus === "assigned") {
+        reviewBadge = `<span class="pill good">⚡ Agente Asignado</span>`;
+      } else if (currentStatus === "needs_review") {
+        reviewBadge = `<span class="pill warn">Requiere Revisión</span>`;
+      } else if (currentStatus === "rejected") {
+        reviewBadge = `<span class="pill">Descartado</span>`;
+      } else {
+        reviewBadge = `<span class="pill info">${esc(label(currentStatus) || currentStatus)}</span>`;
+      }
+    }
+
+    const prColumnHtml = prUrl 
+      ? `<div>
+          <a href="${esc(prUrl)}" target="_blank" class="pr-link-badge">
+            ${esc(prNum || "PR")} en vivo ↗
+          </a>
+          <span class="pr-target-branch">target: ${esc(meta.targetBranch)}</span>
+        </div>`
+      : `<div class="muted" style="font-size: 12px;">${currentStatus === "in_progress" ? "🔨 Generando PR…" : currentStatus === "qualified" ? "🔵 En cola de asignación" : "Sin PR enviada"}</div>`;
+
+    const ciColumnHtml = prUrl
+      ? `<div class="ci-badge">
+          <span class="ci-dot-green"></span>
+          <span>${esc(meta.ci)}</span>
+        </div>`
+      : `<span class="muted" style="font-size: 12px;">⏳ Validación pendiente</span>`;
+
     return `<tr>
       <td>
         <div style="display: flex; flex-direction: column; gap: 3px;">
@@ -321,40 +388,32 @@ function renderBountiesInFlight() {
       </td>
       <td>
         <div style="display: flex; flex-direction: column; gap: 2px;">
-          <a href="${esc(j.sourceUrl || opp.url || prUrl)}" target="_blank" style="color: #E2E8F0; text-decoration: none; line-height: 1.35;">
+          <a href="${esc(relatedJob?.sourceUrl || opp.url || prUrl || '#')}" target="_blank" style="color: #E2E8F0; text-decoration: none; line-height: 1.35;">
             ${esc(title)}
           </a>
+          ${opp.number ? `<span class="muted">#${opp.number} · Score ${opp.score ?? "—"}</span>` : ""}
         </div>
       </td>
-      <td>
-        <div>
-          <a href="${esc(prUrl)}" target="_blank" class="pr-link-badge">
-            ${esc(prNum)} en vivo ↗
-          </a>
-          <span class="pr-target-branch">target: ${esc(meta.targetBranch)}</span>
-        </div>
-      </td>
-      <td>
-        <div class="ci-badge">
-          <span class="ci-dot-green"></span>
-          <span>${esc(meta.ci)}</span>
-        </div>
-      </td>
+      <td>${prColumnHtml}</td>
+      <td>${ciColumnHtml}</td>
       <td>
         <div class="reward-cell">
           <span class="reward-amount">${esc(formattedReward)}</span>
           ${rewardTypeLabel}
         </div>
       </td>
-      <td>
-        <span class="pill ${meta.reviewPill}">${esc(meta.review)}</span>
-      </td>
+      <td>${reviewBadge}</td>
     </tr>`;
   }).join("");
 
   // Update dynamic counters and header badges
   const countEl = $("#bounties-title-count");
-  if (countEl) countEl.textContent = `${submissions.length} Pull Requests Enviados`;
+  if (countEl) {
+    if (currentBountyTab === "submitted") countEl.textContent = `${items.length} Pull Requests Enviados`;
+    else if (currentBountyTab === "active") countEl.textContent = `${items.length} Bounties en Progreso`;
+    else if (currentBountyTab === "qualified") countEl.textContent = `${items.length} Bounties Calificados en Cola`;
+    else countEl.textContent = `${items.length} Bounties Detectados`;
+  }
 
   const amountEl = $("#bounties-title-amount");
   if (amountEl) amountEl.textContent = `${money(totalUsd)} en Pipeline`;
@@ -603,9 +662,61 @@ function renderAgents() {
 }
 
 function renderOpportunities() {
-  const filter = $("#opp-filter").value.toLowerCase();
-  const rows = snapshot.opportunities.filter((o) => !filter || `${o.title} ${o.source} ${o.status} ${label(o.status)} ${o.repo ?? ""}`.toLowerCase().includes(filter));
-  $("#opp-table tbody").innerHTML = rows.slice(0, 300).map((o) => {
+  const filter = ($("#opp-filter")?.value || "").toLowerCase();
+  const allOpps = snapshot.opportunities || [];
+  const submittedJobs = (snapshot.jobs || []).filter((j) => j.status === "submitted" || j.submission);
+
+  // Update chip badge counts
+  const countAll = allOpps.length;
+  const countBounty = allOpps.filter((o) => o.kind === "bounty").length;
+  const countReward = allOpps.filter((o) => (o.expectedReward && o.expectedReward.amount > 0) || (o.pricePerCallUsd != null && o.pricePerCallUsd > 0)).length;
+  const countQualified = allOpps.filter((o) => ["qualified", "assigned"].includes(o.status)).length;
+  const countSubmitted = allOpps.filter((o) => o.status === "submitted" || submittedJobs.some((j) => j.opportunityId === o.id)).length;
+  const countReview = allOpps.filter((o) => o.status === "needs_review").length;
+  const countRejected = allOpps.filter((o) => ["rejected", "abandoned"].includes(o.status)).length;
+
+  const elAll = $("#chip-all"); if (elAll) elAll.textContent = countAll;
+  const elBounty = $("#chip-bounty"); if (elBounty) elBounty.textContent = countBounty;
+  const elReward = $("#chip-reward"); if (elReward) elReward.textContent = countReward;
+  const elQual = $("#chip-qualified"); if (elQual) elQual.textContent = countQualified;
+  const elSub = $("#chip-submitted"); if (elSub) elSub.textContent = countSubmitted;
+  const elRev = $("#chip-review"); if (elRev) elRev.textContent = countReview;
+  const elRej = $("#chip-rejected"); if (elRej) elRej.textContent = countRejected;
+
+  // Highlight active chip button
+  document.querySelectorAll("#opp-status-chips button").forEach((btn) => {
+    const chip = btn.getAttribute("data-opp-chip");
+    btn.className = chip === currentOppChip ? "primary small" : "secondary small";
+  });
+
+  // Filter based on active chip
+  let filtered = allOpps;
+  if (currentOppChip === "bounty") {
+    filtered = filtered.filter((o) => o.kind === "bounty");
+  } else if (currentOppChip === "reward") {
+    filtered = filtered.filter((o) => (o.expectedReward && o.expectedReward.amount > 0) || (o.pricePerCallUsd != null && o.pricePerCallUsd > 0));
+  } else if (currentOppChip === "qualified") {
+    filtered = filtered.filter((o) => ["qualified", "assigned"].includes(o.status));
+  } else if (currentOppChip === "submitted") {
+    filtered = filtered.filter((o) => o.status === "submitted" || submittedJobs.some((j) => j.opportunityId === o.id));
+  } else if (currentOppChip === "needs_review") {
+    filtered = filtered.filter((o) => o.status === "needs_review");
+  } else if (currentOppChip === "rejected") {
+    filtered = filtered.filter((o) => ["rejected", "abandoned"].includes(o.status));
+  }
+
+  // Filter based on search input
+  if (filter) {
+    filtered = filtered.filter((o) => `${o.title} ${o.source} ${o.status} ${label(o.status)} ${o.repo ?? ""}`.toLowerCase().includes(filter));
+  }
+
+  const totalEl = $("#opp-total-count");
+  if (totalEl) totalEl.textContent = `${filtered.length} de ${allOpps.length}`;
+
+  const tbody = $("#opp-table tbody");
+  if (!tbody) return;
+
+  tbody.innerHTML = filtered.slice(0, 1000).map((o) => {
     const agent = snapshot.agents.find((a) => a.id === o.assignedAgentId);
     const reward = o.expectedReward ? money(o.expectedReward.amount, o.expectedReward.asset) : o.pricePerCallUsd != null ? `${o.pricePerCallUsd} USD/llamada` : "—";
     const extra = o.kind === "market" ? `<div class="muted">${o.demand?.calls30d ?? 0} llamadas · ${o.demand?.payers30d ?? 0} pagadores (30d)</div>` : o.evaluation?.judgement?.reason ? `<div class="muted">${esc(o.evaluation.judgement.reason)}</div>` : "";
@@ -614,7 +725,7 @@ function renderOpportunities() {
       <td>${link(o.url, o.title)}${o.repo ? `<div class="muted">${esc(o.repo)}#${o.number}</div>` : ""}${extra}</td>
       <td class="num">${esc(reward)}</td><td>${(o.riskFlags ?? []).map((r) => `<span class="pill warn">${esc(r)}</span>`).join(" ")}</td>
       <td>${agent ? esc(agent.label) : ""}</td><td>${canRequeue ? `<button class="secondary" data-requeue="${o.id}">Encolar</button>` : ""}</td></tr>`;
-  }).join("") || `<tr><td colspan="8" class="muted">Sin oportunidades. Los scouts se ejecutan al arrancar y cada intervalo configurado.</td></tr>`;
+  }).join("") || `<tr><td colspan="8" class="muted">Sin oportunidades que coincidan con los filtros seleccionados.</td></tr>`;
 }
 
 function renderJobs() {
@@ -668,6 +779,21 @@ document.addEventListener("click", async (event) => {
     document.querySelectorAll(".tab").forEach((s) => s.classList.toggle("active", s.id === `tab-${t.dataset.tab}`));
     return;
   }
+
+  const bountyTabBtn = t.closest("[data-bounty-tab]");
+  if (bountyTabBtn) {
+    currentBountyTab = bountyTabBtn.getAttribute("data-bounty-tab");
+    renderBountiesInFlight();
+    return;
+  }
+
+  const oppChipBtn = t.closest("[data-opp-chip]");
+  if (oppChipBtn) {
+    currentOppChip = oppChipBtn.getAttribute("data-opp-chip");
+    renderOpportunities();
+    return;
+  }
+
   try {
     if (t.dataset.stop) {
       const ok = await cyberConfirm("¿Detener la ejecución de este agente?", "Detener Agente");

@@ -75,6 +75,14 @@
             </span>
           </div>
         </div>
+
+        <div class="row" style="gap: 8px; margin-bottom: 12px; flex-wrap: wrap;" id="bounties-tabs">
+          <button class="primary" data-bounty-tab="submitted" style="font-size: 12px; padding: 6px 14px; cursor: pointer;">🟢 PRs Enviados (<span id="bounty-tab-submitted-count">0</span>)</button>
+          <button class="secondary" data-bounty-tab="active" style="font-size: 12px; padding: 6px 14px; cursor: pointer;">🟡 En Progreso (<span id="bounty-tab-active-count">0</span>)</button>
+          <button class="secondary" data-bounty-tab="qualified" style="font-size: 12px; padding: 6px 14px; cursor: pointer;">🔵 En Cola / Calificados (<span id="bounty-tab-qualified-count">0</span>)</button>
+          <button class="secondary" data-bounty-tab="all" style="font-size: 12px; padding: 6px 14px; cursor: pointer;">🟣 Todos los Bounties (<span id="bounty-tab-all-count">0</span>)</button>
+        </div>
+
         <div class="table-wrap">
           <table id="bounties-table">
             <thead>
@@ -141,7 +149,22 @@
 
     <section id="tab-opportunities" class="tab">
       <div class="card">
-        <div class="row between"><h2>Oportunidades</h2><div class="row"><input id="opp-filter" placeholder="Filtrar por texto o estado" /><button class="secondary" data-reevaluate="1" title="Vuelve a evaluar con el modelo los bounties puntuados sólo por heurística">Reevaluar con el modelo</button></div></div>
+        <div class="row between" style="margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+          <h2 style="margin: 0;">Oportunidades & Bounties (<span id="opp-total-count">0</span>)</h2>
+          <div class="row" style="gap: 8px; flex-wrap: wrap;">
+            <input id="opp-filter" placeholder="Filtrar por texto, repo o estado" style="min-width: 220px;" />
+            <button class="secondary" data-reevaluate="1" title="Vuelve a evaluar con el modelo los bounties puntuados sólo por heurística">Reevaluar con IA</button>
+          </div>
+        </div>
+        <div class="row" style="gap: 6px; margin-bottom: 14px; flex-wrap: wrap;" id="opp-status-chips">
+          <button class="primary small" data-opp-chip="all">Todas (<span id="chip-all">0</span>)</button>
+          <button class="secondary small" data-opp-chip="bounty">Solo Bounties (<span id="chip-bounty">0</span>)</button>
+          <button class="secondary small" data-opp-chip="reward">Con Recompensa $$$ (<span id="chip-reward">0</span>)</button>
+          <button class="secondary small" data-opp-chip="qualified">Calificadas (<span id="chip-qualified">0</span>)</button>
+          <button class="secondary small" data-opp-chip="submitted">Enviadas (PRs) (<span id="chip-submitted">0</span>)</button>
+          <button class="secondary small" data-opp-chip="needs_review">En Revisión (<span id="chip-review">0</span>)</button>
+          <button class="secondary small" data-opp-chip="rejected">Descartadas (<span id="chip-rejected">0</span>)</button>
+        </div>
         <div class="table-wrap"><table id="opp-table"><thead><tr><th>Score</th><th>Estado</th><th>Fuente</th><th>Título</th><th>Recompensa</th><th>Riesgo</th><th>Agente</th><th></th></tr></thead><tbody></tbody></table></div>
       </div>
     </section>
